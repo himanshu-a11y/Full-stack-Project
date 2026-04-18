@@ -1,31 +1,31 @@
-# Project 18 – SkillBridge (ITI Student Job Matching Portal)
+# SkillBridge — Member 2 Contributions
 
-## Group Details
+## Files Added
+| File | Description |
+|------|-------------|
+| `seed/seed.js` | Inserts 30 students and 5 jobs into MongoDB for development |
+| `server/models/Job.js` | Mongoose schema for job listings |
+| `server/routes/jobs.js` | POST /api/jobs, GET /api/jobs, GET /api/jobs/:id/candidates |
+| `server/index.js` | Wired job routes to Express app |
 
-**Group Number:** 1
+## Phase 1 Work (Apr 11–18)
+- **Seed Script** — 30 students with varied trades, districts, certifications. 5 targeted job postings.
+- **Jobs Route** — Paginated public job listing + employer-protected job creation
+- **Candidate Matching** — Aggregation pipeline scoring candidates by trade (40pts), district (30pts), certifications (30pts)
 
-**Team Members:**
+## Phase 2 Work (Apr 19–25) — Coming Soon
+- `server/services/cache.js` — Redis 30-min cache with selective trade-based invalidation
+- `seed/testWeights.js` — Weight tuning demo script
+- `docs/matching-demo.md` — Matching scenarios documentation
 
-* Bobby Sharma
-* Himanshu Gurjar
-* Pratham Bansal 
-* Vedika Agrawal 
+## How to Run Seed
+```bash
+MONGO_URI="your_atlas_uri" node seed/seed.js
+```
 
-## Project Description
-
-SkillBridge is a MERN stack based web application that connects ITI students with employers. Students can create profiles with their skills, trade, and certifications, while employers can post job opportunities. The system matches students with jobs based on trade, district, and certifications.
-
-## Technologies Used
-
-* MongoDB
-* Express.js
-* React.js
-* Node.js
-* JWT Authentication
-* Redis (for caching)
-
-## GitHub Repository Rules
-
-* This repository is public as required.
-* All group members will contribute through commits.
-* Each member is responsible for their assigned modules.
+## API Endpoints
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/jobs` | Employer JWT | Create a job |
+| GET | `/api/jobs` | None | Paginated job list |
+| GET | `/api/jobs/:id/candidates` | Employer JWT | Matched candidates with scores |
