@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from '../api/axios';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Card from '../components/ui/Card';
+import Alert from '../components/ui/Alert';
 
 const EmployerRegister = () => {
   const navigate = useNavigate();
@@ -37,171 +41,72 @@ const EmployerRegister = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Employer Registration</h2>
-        <p style={styles.subtitle}>Post jobs and find skilled ITI candidates</p>
+    <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md p-8 shadow-card-hover md:my-10">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Employer Registration</h2>
+          <p className="text-gray-600 text-sm">Post jobs and find skilled ITI candidates</p>
+        </div>
 
-        {error && <div style={styles.errorBox}>{error}</div>}
+        {error && <Alert variant="error" className="mb-6">{error}</Alert>}
 
-        <form onSubmit={handleSubmit}>
-          <div style={styles.field}>
-            <label style={styles.label}>Company Name</label>
-            <input
-              style={styles.input}
-              type="text"
-              name="companyName"
-              placeholder="e.g. Tata Motors Ltd"
-              value={formData.companyName}
-              onChange={handleChange}
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Company Name"
+            type="text"
+            name="companyName"
+            placeholder="e.g. Tata Motors Ltd"
+            value={formData.companyName}
+            onChange={handleChange}
+            required
+          />
+
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            placeholder="hr@company.com"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            placeholder="Minimum 6 characters"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+
+          <Input
+            label="City"
+            type="text"
+            name="city"
+            placeholder="e.g. Ahmedabad"
+            value={formData.city}
+            onChange={handleChange}
+            required
+          />
+
+          <div className="pt-3">
+            <Button type="submit" loading={loading} fullWidth>
+              {loading ? 'Registering...' : 'Register as Employer'}
+            </Button>
           </div>
-
-          <div style={styles.field}>
-            <label style={styles.label}>Email</label>
-            <input
-              style={styles.input}
-              type="email"
-              name="email"
-              placeholder="hr@company.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div style={styles.field}>
-            <label style={styles.label}>Password</label>
-            <input
-              style={styles.input}
-              type="password"
-              name="password"
-              placeholder="Minimum 6 characters"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div style={styles.field}>
-            <label style={styles.label}>City</label>
-            <input
-              style={styles.input}
-              type="text"
-              name="city"
-              placeholder="e.g. Ahmedabad"
-              value={formData.city}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <button style={loading ? styles.btnDisabled : styles.btn} type="submit" disabled={loading}>
-            {loading ? 'Registering...' : 'Register as Employer'}
-          </button>
         </form>
 
-        <p style={styles.bottomText}>
-          Already have an account?{' '}
-          <Link to="/employer/login" style={styles.link}>Login here</Link>
-        </p>
-      </div>
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-600">
+            Already have an account?{' '}
+            <Link to="/employer/login" className="text-brand-blue font-medium hover:underline">Login here</Link>
+          </p>
+        </div>
+      </Card>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#F7F8FA',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '40px 16px',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    border: '0.5px solid #E2E8F0',
-    padding: '40px',
-    width: '100%',
-    maxWidth: '460px',
-  },
-  title: {
-    fontSize: '22px',
-    fontWeight: '600',
-    color: '#1F3864',
-    margin: '0 0 6px 0',
-  },
-  subtitle: {
-    fontSize: '14px',
-    color: '#718096',
-    margin: '0 0 28px 0',
-  },
-  errorBox: {
-    backgroundColor: '#FFF5F5',
-    border: '1px solid #FEB2B2',
-    color: '#C53030',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    marginBottom: '16px',
-  },
-  field: {
-    marginBottom: '18px',
-  },
-  label: {
-    display: 'block',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#4A5568',
-    marginBottom: '6px',
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    fontSize: '14px',
-    border: '1px solid #CBD5E0',
-    borderRadius: '8px',
-    outline: 'none',
-    boxSizing: 'border-box',
-    color: '#2D3748',
-  },
-  btn: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#1F3864',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    marginTop: '8px',
-  },
-  btnDisabled: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#A0AEC0',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    cursor: 'not-allowed',
-    marginTop: '8px',
-  },
-  bottomText: {
-    textAlign: 'center',
-    fontSize: '13px',
-    color: '#718096',
-    marginTop: '20px',
-  },
-  link: {
-    color: '#1F3864',
-    fontWeight: '500',
-    textDecoration: 'none',
-  },
 };
 
 export default EmployerRegister;

@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { TRADES, DISTRICTS, CERTIFICATIONS } from '../../../shared/constants';
+import Sidebar from '../components/ui/Sidebar';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
+import Alert from '../components/ui/Alert';
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -20,7 +25,6 @@ const PostJob = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Fetch existing jobs on page load
   useEffect(() => {
     const fetchMyJobs = async () => {
       try {
@@ -65,26 +69,43 @@ const PostJob = () => {
     }
   };
 
+  const sidebarLinks = [
+    {
+      label: 'Post New Job',
+      to: '/employer/dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
-    <div style={styles.container}>
+    <div className="flex bg-slate-50 min-h-[calc(100vh-64px)]">
+      <div className="hidden md:block">
+        <Sidebar links={sidebarLinks} title="Employer Panel" />
+      </div>
 
-      {/* Post Job Form */}
-      <div style={styles.card}>
-        <h2 style={styles.title}>Post a New Job</h2>
-        <p style={styles.subtitle}>Find the right ITI candidate for your requirement</p>
+      <div className="flex-1 p-6 md:p-10 max-w-5xl mx-auto overflow-y-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Employer Dashboard</h1>
+          <p className="text-gray-600">Manage your job listings and find the best candidates.</p>
+        </div>
 
-        {error && <div style={styles.errorBox}>{error}</div>}
-        {success && (
-          <div style={styles.successBox}>
-            {success}
+        {/* Post Job Form */}
+        <Card className="p-6 md:p-8 mb-10">
+          <div className="border-b border-gray-100 pb-4 mb-6">
+            <h2 className="text-xl font-semibold text-brand-navy">Post a New Job</h2>
+            <p className="text-sm text-gray-500 mt-1">Fill out the requirements to find the right ITI candidate.</p>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit}>
-          <div style={styles.field}>
-            <label style={styles.label}>Job Title</label>
-            <input
-              style={styles.input}
+          {error && <Alert variant="error" className="mb-6">{error}</Alert>}
+          {success && <Alert variant="success" className="mb-6">{success}</Alert>}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Input
+              label="Job Title"
               type="text"
               name="title"
               placeholder="e.g. Electrician Trainee"
@@ -92,266 +113,127 @@ const PostJob = () => {
               onChange={handleChange}
               required
             />
-          </div>
 
-          <div style={styles.row}>
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label}>Trade Required</label>
-              <select
-                style={styles.input}
-                name="trade"
-                value={formData.trade}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select trade</option>
-                {TRADES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Trade Required</label>
+                <select
+                  name="trade"
+                  value={formData.trade}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                >
+                  <option value="">Select trade...</option>
+                  {TRADES.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">District</label>
+                <select
+                  name="district"
+                  value={formData.district}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                >
+                  <option value="">Select district...</option>
+                  {DISTRICTS.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-700">Certifications Required</label>
+              <div className="flex flex-wrap gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                {CERTIFICATIONS.map((cert) => (
+                  <label key={cert} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900 bg-white px-3 py-1.5 rounded border border-gray-200 shadow-sm transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formData.certRequired.includes(cert)}
+                      onChange={() => handleCertChange(cert)}
+                      className="w-4 h-4 text-brand-navy rounded border-gray-300 focus:ring-brand-navy"
+                    />
+                    {cert}
+                  </label>
                 ))}
-              </select>
+              </div>
             </div>
 
-            <div style={{ ...styles.field, flex: 1, marginLeft: '16px' }}>
-              <label style={styles.label}>District</label>
-              <select
-                style={styles.input}
-                name="district"
-                value={formData.district}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">Job Description</label>
+              <textarea
+                name="description"
+                placeholder="Describe the role, responsibilities, and requirements..."
+                value={formData.description}
                 onChange={handleChange}
+                rows={4}
                 required
-              >
-                <option value="">Select district</option>
-                {DISTRICTS.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+                className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-y"
+              />
             </div>
-          </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Certifications Required</label>
-            <div style={styles.checkboxGroup}>
-              {CERTIFICATIONS.map((cert) => (
-                <label key={cert} style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={formData.certRequired.includes(cert)}
-                    onChange={() => handleCertChange(cert)}
-                    style={{ marginRight: '6px' }}
-                  />
-                  {cert}
-                </label>
-              ))}
+            <div className="pt-2">
+              <Button type="submit" loading={loading}>
+                {loading ? 'Posting...' : 'Post Job'}
+              </Button>
             </div>
+          </form>
+        </Card>
+
+        {/* My Posted Jobs Table */}
+        <Card className="p-6 md:p-8">
+          <div className="border-b border-gray-100 pb-4 mb-6">
+            <h3 className="text-xl font-semibold text-brand-navy">My Posted Jobs</h3>
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Job Description</label>
-            <textarea
-              style={styles.textarea}
-              name="description"
-              placeholder="Describe the role, responsibilities, and requirements..."
-              value={formData.description}
-              onChange={handleChange}
-              rows={4}
-              required
-            />
-          </div>
-
-          <button
-            style={loading ? styles.btnDisabled : styles.btn}
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? 'Posting...' : 'Post Job'}
-          </button>
-        </form>
-      </div>
-
-      {/* My Posted Jobs Table */}
-      <div style={styles.card}>
-        <h3 style={styles.title}>My Posted Jobs</h3>
-
-        {jobsLoading ? (
-          <p style={{ color: '#718096', fontSize: '14px' }}>Loading jobs...</p>
-        ) : myJobs.length === 0 ? (
-          <p style={{ color: '#718096', fontSize: '14px' }}>
-            No jobs posted yet. Post your first job above.
-          </p>
-        ) : (
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Title</th>
-                <th style={styles.th}>Trade</th>
-                <th style={styles.th}>District</th>
-                <th style={styles.th}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {myJobs.map((job) => (
-                <tr key={job._id}>
-                  <td style={styles.td}>{job.title}</td>
-                  <td style={styles.td}>{job.trade}</td>
-                  <td style={styles.td}>{job.district}</td>
-                  <td style={styles.td}>
-                    <Link
-                      to={`/employer/jobs/${job._id}/candidates`}
-                      style={styles.viewLink}
-                    >
-                      View Candidates
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+          {jobsLoading ? (
+            <div className="py-8 text-center text-gray-500">Loading jobs...</div>
+          ) : myJobs.length === 0 ? (
+            <div className="py-12 text-center bg-gray-50 rounded-lg border border-dashed border-gray-300">
+              <p className="text-gray-500">No jobs posted yet. Post your first job above.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 text-gray-600 text-sm">
+                    <th className="px-4 py-3 font-medium border-b border-gray-200 rounded-tl-lg">Title</th>
+                    <th className="px-4 py-3 font-medium border-b border-gray-200">Trade</th>
+                    <th className="px-4 py-3 font-medium border-b border-gray-200">District</th>
+                    <th className="px-4 py-3 font-medium border-b border-gray-200 rounded-tr-lg">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm text-gray-700">
+                  {myJobs.map((job) => (
+                    <tr key={job._id} className="border-b border-gray-100 hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-4 font-medium text-gray-900">{job.title}</td>
+                      <td className="px-4 py-4">{job.trade}</td>
+                      <td className="px-4 py-4">{job.district}</td>
+                      <td className="px-4 py-4">
+                        <Link
+                          to={`/employer/jobs/${job._id}/candidates`}
+                          className="text-brand-blue font-medium hover:underline inline-flex items-center gap-1"
+                        >
+                          View Candidates
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '800px',
-    margin: '0 auto',
-    padding: '40px 16px',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    border: '0.5px solid #E2E8F0',
-    padding: '40px',
-    marginBottom: '32px',
-  },
-  title: {
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#1F3864',
-    margin: '0 0 6px 0',
-  },
-  subtitle: {
-    fontSize: '14px',
-    color: '#718096',
-    margin: '0 0 28px 0',
-  },
-  errorBox: {
-    backgroundColor: '#FFF5F5',
-    border: '1px solid #FEB2B2',
-    color: '#C53030',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    marginBottom: '16px',
-  },
-  successBox: {
-    backgroundColor: '#F0FFF4',
-    border: '1px solid #9AE6B4',
-    color: '#276749',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    marginBottom: '16px',
-  },
-  field: {
-    marginBottom: '18px',
-  },
-  row: {
-    display: 'flex',
-    marginBottom: '18px',
-  },
-  label: {
-    display: 'block',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#4A5568',
-    marginBottom: '6px',
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    fontSize: '14px',
-    border: '1px solid #CBD5E0',
-    borderRadius: '8px',
-    outline: 'none',
-    boxSizing: 'border-box',
-    color: '#2D3748',
-    backgroundColor: '#ffffff',
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px 12px',
-    fontSize: '14px',
-    border: '1px solid #CBD5E0',
-    borderRadius: '8px',
-    outline: 'none',
-    boxSizing: 'border-box',
-    color: '#2D3748',
-    resize: 'vertical',
-  },
-  checkboxGroup: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '12px',
-    padding: '10px',
-    border: '1px solid #CBD5E0',
-    borderRadius: '8px',
-  },
-  checkboxLabel: {
-    fontSize: '13px',
-    color: '#4A5568',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  btn: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#1F3864',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    marginTop: '8px',
-  },
-  btnDisabled: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#A0AEC0',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    cursor: 'not-allowed',
-    marginTop: '8px',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: '14px',
-  },
-  th: {
-    textAlign: 'left',
-    padding: '10px 12px',
-    backgroundColor: '#EDF2F7',
-    color: '#4A5568',
-    fontWeight: '500',
-    borderBottom: '1px solid #E2E8F0',
-  },
-  td: {
-    padding: '10px 12px',
-    borderBottom: '1px solid #E2E8F0',
-    color: '#2D3748',
-  },
-  viewLink: {
-    color: '#1F3864',
-    fontWeight: '500',
-    textDecoration: 'none',
-    fontSize: '13px',
-  },
 };
 
 export default PostJob;

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 
 // Lazy imports — all pages load only when needed
+const Home             = lazy(() => import('./pages/Home'));
 const StudentRegister  = lazy(() => import('./pages/StudentRegister'));
 const StudentLogin     = lazy(() => import('./pages/StudentLogin'));
 const StudentProfile   = lazy(() => import('./pages/StudentProfile'));
@@ -15,9 +16,9 @@ const CandidateList    = lazy(() => import('./pages/CandidateList'));
 
 // Simple 404 page
 const NotFound = () => (
-  <div style={{ textAlign: 'center', marginTop: '80px' }}>
-    <h2>404 — Page not found</h2>
-    <p>The page you are looking for does not exist.</p>
+  <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] text-center p-4">
+    <h2 className="text-3xl font-bold text-gray-900 mb-2">404 — Page not found</h2>
+    <p className="text-gray-600">The page you are looking for does not exist.</p>
   </div>
 );
 
@@ -26,13 +27,14 @@ const App = () => {
     <BrowserRouter>
       <Navbar />
       <Suspense fallback={
-        <div style={{ textAlign: 'center', marginTop: '60px' }}>
-          Loading...
+        <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy"></div>
         </div>
       }>
         <Routes>
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/jobs" replace />} />
+          {/* Default redirect to landing page */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/home" element={<Home />} />
 
           {/* Student routes */}
           <Route path="/student/register" element={<StudentRegister />} />
