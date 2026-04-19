@@ -10,10 +10,9 @@ const employerSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-employerSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+employerSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
 module.exports = mongoose.model('Employer', employerSchema);
