@@ -4,10 +4,17 @@ import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import Input from '../components/ui/Input';
 
 const StudentProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [updating, setUpdating] = useState(false);
+  
+  const TRADES = ['Electrician', 'Fitter', 'Welder', 'Turner', 'Mechanic', 'Plumber', 'Carpenter', 'Painter', 'Draughtsman', 'COPA'];
+  const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Mehsana', 'Anand', 'Bhavnagar', 'Jamnagar', 'Junagadh'];
 
   useEffect(() => {
     // Simulated fetch - Backend student route is commented out inside server/index.js
@@ -46,6 +53,34 @@ const StudentProfile = () => {
     }
   ];
 
+  const handleEditClick = () => {
+    setFormData(profile || {});
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async () => {
+    setUpdating(true);
+    try {
+      // Mock API call to update profile
+      // await axios.put('/api/student/profile', formData);
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
+      setProfile(formData);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Failed to update profile", err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center">
@@ -63,11 +98,70 @@ const StudentProfile = () => {
       <div className="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-          <Button variant="outline">Edit Profile</Button>
+          {isEditing ? (
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={handleCancelEdit} disabled={updating}>Cancel</Button>
+              <Button onClick={handleSave} loading={updating}>Save Changes</Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={handleEditClick}>Edit Profile</Button>
+          )}
         </div>
 
         <Card className="p-8 mb-8">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 border-b border-gray-100 pb-8 mb-8">
+          {isEditing ? (
+            <div className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <Input
+                  label="Full Name"
+                  name="name"
+                  value={formData.name || ''}
+                  onChange={handleChange}
+                />
+                <Input
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={formData.email || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <Input
+                  label="Phone Number"
+                  name="phone"
+                  value={formData.phone || ''}
+                  onChange={handleChange}
+                />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">ITI Trade</label>
+                  <select
+                    name="trade"
+                    value={formData.trade || ''}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                  >
+                    {TRADES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">District</label>
+                  <select
+                    name="district"
+                    value={formData.district || ''}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                  >
+                    {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 border-b border-gray-100 pb-8 mb-8">
             <div className="w-24 h-24 rounded-full bg-brand-light text-brand-blue flex items-center justify-center text-3xl font-bold flex-shrink-0">
               {profile?.name.charAt(0)}
             </div>
@@ -98,17 +192,19 @@ const StudentProfile = () => {
                   <p className="text-sm text-gray-500 mb-1">District</p>
                   <Badge variant="green" className="text-sm px-3 py-1">{profile?.district}</Badge>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Certifications</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {profile?.certifications.map(cert => (
-                      <Badge key={cert} variant="orange" className="text-sm px-3 py-1">{cert}</Badge>
-                    ))}
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Certifications</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {profile?.certifications?.map(cert => (
+                          <Badge key={cert} variant="orange" className="text-sm px-3 py-1">{cert}</Badge>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
         </Card>
       </div>
     </div>

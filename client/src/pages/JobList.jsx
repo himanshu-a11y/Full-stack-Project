@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import Card from '../components/ui/Card';
@@ -12,18 +12,43 @@ const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'M
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  
+  const observer = useRef();
   
   const [filters, setFilters] = useState({
     trade: '',
     district: '',
   });
 
+  const lastJobElementRef = useCallback(node => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
+
+  useEffect(() => {
+    // Reset page and jobs when filters change (if handled by API in future). 
+    // Right now, it's just client-side, but it's good practice.
+  }, [filters]);
+
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
       try {
-        const res = await axios.get('/api/jobs?page=1&limit=50');
-        setJobs(res.data.jobs || []);
+        const res = await axios.get(`/api/jobs?page=${page}&limit=10`);
+        setJobs(prevJobs => {
+          if (page === 1) return res.data.jobs || [];
+          return [...prevJobs, ...(res.data.jobs || [])];
+        });
+        setHasMore(res.data.jobs && res.data.jobs.length > 0);
       } catch (err) {
         console.error('Failed to fetch jobs', err);
       } finally {
@@ -31,7 +56,7 @@ const JobList = () => {
       }
     };
     fetchJobs();
-  }, []);
+  }, [page]);
 
   const filteredJobs = jobs.filter(job => {
     if (filters.trade && job.trade !== filters.trade) return false;
@@ -107,8 +132,14 @@ const JobList = () => {
                 </Button>
               </Card>
             ) : (
-              filteredJobs.map(job => (
-                <Card key={job._id} className="p-6 hover:shadow-card-hover transition-all duration-200">
+              filteredJobs.map((job, index) => {
+                const isLast = filteredJobs.length === index + 1;
+                return (
+                <Card 
+                  ref={isLast ? lastJobElementRef : null} 
+                  key={job._id} 
+                  className="p-6 hover:shadow-card-hover transition-all duration-200"
+                >
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div className="flex-1">
                       <h2 className="text-xl font-bold text-gray-900 mb-2">{job.title}</h2>
@@ -127,7 +158,12 @@ const JobList = () => {
                     </div>
                   </div>
                 </Card>
-              ))
+              )})
+            )}
+            {loading && jobs.length > 0 && (
+              <div className="py-4 text-center">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-brand-navy"></div>
+              </div>
             )}
           </div>
         </div>
