@@ -31,9 +31,6 @@ Since _id is NOT part of our { trade: 1, status: 1 } index,
 including it forces MongoDB to fetch the actual document — breaking the covered query.
 We must explicitly set _id: 0 in the projection.
 
-## explain() Output
-[INSERT screenshot of terminal output here after running node server/scripts/verifyIndex.js]
-
 Expected results:
 - totalDocsExamined : 0       ✅
 - totalKeysExamined : (number of matched students)
