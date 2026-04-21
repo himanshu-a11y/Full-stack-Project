@@ -1,50 +1,54 @@
-# SkillBridge — Member 2 Contributions
+# SkillBridge — ITI Student Job Matching Portal
 
-## Files Added
-| File | Description |
-|------|-------------|
-| `seed/seed.js` | Inserts 30 students and 5 jobs into MongoDB for development |
-| `server/models/Job.js` | Mongoose schema for job listings |
-| `server/routes/jobs.js` | POST /api/jobs, GET /api/jobs, GET /api/jobs/:id/candidates |
-| `server/index.js` | Wired job routes to Express app |
+**Group 1** | Bobby Sharma · Himanshu Gurjar · Pratham Bansal · Vedika Agrawal
 
-## Phase 1 Work (Apr 11–18)
-- **Seed Script** — 30 students with varied trades, districts, certifications. 5 targeted job postings.
-- **Jobs Route** — Paginated public job listing + employer-protected job creation
-- **Candidate Matching** — Aggregation pipeline scoring candidates by trade (40pts), district (30pts), certifications (30pts)
+## Overview
+SkillBridge is a MERN stack web application connecting ITI students with employers.
+Students create skill profiles. Employers post jobs. The system matches students 
+to jobs using a scored aggregation pipeline (trade + district + certifications).
 
-## Phase 2 Work (Apr 19–25) — Coming Soon
-- `server/services/cache.js` — Redis 30-min cache with selective trade-based invalidation
-- `seed/testWeights.js` — Weight tuning demo script
-- `docs/matching-demo.md` — Matching scenarios documentation
+## Tech Stack
+| Layer | Technology |
+|---|---|
+| Frontend | React 19 + Vite + Tailwind CSS |
+| Backend | Node.js + Express 5 |
+| Database | MongoDB 6 (Mongoose) |
+| Cache | Redis 7 (ioredis) |
+| Auth | JWT (dual token — student + employer) |
+| DevOps | Docker Compose |
 
-## How to Run Seed
-```bash
-MONGO_URI="your_atlas_uri" node seed/seed.js
-```
+## Setup Instructions
+1. Clone the repo
+2. Copy `.env.example` to `.env` and set `JWT_SECRET`
+3. Run `docker-compose up --build`
+4. Seed data: `node seed/seed.js`
+5. Open `http://localhost:5173`
+
+## Team Contributions
+| Member | Branch | Responsibility |
+|---|---|---|
+| Vedika Agrawal | Vedika | MongoDB models, JWT auth, CSV import, covered query |
+| Bobby Sharma | Bobby | Matching aggregation pipeline, Redis cache, seed data |
+| Himanshu Gurjar | Himanshu | Student UI pages, infinite scroll, job listings |
+| Pratham Bansal | Pratham | Employer UI, routing, DevOps, component library, home page |
+
+## 6 Technical Concepts Implemented
+1. **Aggregation Pipeline** — `server/services/matching.js`
+2. **Bulk CSV Import with Upsert** — `server/routes/admin.js`
+3. **Redis Cache with Selective Invalidation** — `server/services/cache.js`
+4. **Dual JWT Token Types** — `server/middleware/studentGuard.js` + `employerGuard.js`
+5. **Infinite Scroll with useCallback** — `client/src/pages/JobList.jsx`
+6. **Covered Query Optimization** — `server/models/Student.js` + `docs/query-proof.md`
 
 ## API Endpoints
 | Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/jobs` | Employer JWT | Create a job |
-| GET | `/api/jobs` | None | Paginated job list |
-| GET | `/api/jobs/:id/candidates` | Employer JWT | Matched candidates with scores |
-
-## Project Description
-
-SkillBridge is a MERN stack based web application that connects ITI students with employers. Students can create profiles with their skills, trade, and certifications, while employers can post job opportunities. The system matches students with jobs based on trade, district, and certifications.
-
-## Technologies Used
-
-* MongoDB
-* Express.js
-* React.js
-* Node.js
-* JWT Authentication
-* Redis (for caching)
-
-## GitHub Repository Rules
-
-* This repository is public as required.
-* All group members will contribute through commits.
-* Each member is responsible for their assigned modules.
+|---|---|---|---|
+| POST | /api/student/register | None | Student registration |
+| POST | /api/employer/register | None | Employer registration |
+| POST | /api/auth/login | None | Login for both roles |
+| PUT | /api/student/profile | Student | Update profile |
+| POST | /api/jobs | Employer | Post a job |
+| GET | /api/jobs | None | Paginated job list |
+| GET | /api/jobs/:id/candidates | Employer | Matched candidates with scores |
+| POST | /api/admin/import | None | Bulk CSV student import |
+>>>>>>> pratham

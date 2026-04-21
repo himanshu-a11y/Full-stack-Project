@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy imports — all pages load only when needed
 const Home             = lazy(() => import('./pages/Home'));
@@ -25,12 +26,13 @@ const NotFound = () => (
 const App = () => {
   return (
     <BrowserRouter>
-      <Navbar />
-      <Suspense fallback={
-        <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy"></div>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div style={{ textAlign: "center", marginTop: "60px" }}>
+            Loading...
+          </div>
+        }
+      >
         <Routes>
           {/* Default redirect to landing page */}
           <Route path="/" element={<Navigate to="/home" replace />} />
@@ -38,14 +40,35 @@ const App = () => {
 
           {/* Student routes */}
           <Route path="/student/register" element={<StudentRegister />} />
-          <Route path="/student/login"    element={<StudentLogin />} />
-          <Route path="/student/profile"  element={<StudentProfile />} />
+          <Route path="/student/login" element={<StudentLogin />} />
+          <Route
+            path="/student/profile"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentProfile />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Employer routes */}
           <Route path="/employer/register" element={<EmployerRegister />} />
           <Route path="/employer/login" element={<EmployerLogin />} />
-          <Route path="/employer/dashboard" element={<PostJob />} />
-          <Route path="/employer/jobs/:id/candidates" element={<CandidateList />} />
+          <Route
+            path="/employer/dashboard"
+            element={
+              <ProtectedRoute requiredRole="employer">
+                <PostJob />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employer/jobs/:id/candidates"
+            element={
+              <ProtectedRoute requiredRole="employer">
+                <CandidateList />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Public routes */}
           <Route path="/jobs" element={<JobList />} />
