@@ -1,19 +1,35 @@
 import { useNavigate, Link, NavLink } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from './ui/Button';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const role = localStorage.getItem('skillbridge_role');
-  const token = localStorage.getItem('skillbridge_token');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [role, setRole] = useState(localStorage.getItem('skillbridge_role'));
+  const [token, setToken] = useState(localStorage.getItem('skillbridge_token'));
 
-  const handleLogout = () => {
-    localStorage.removeItem('skillbridge_token');
-    localStorage.removeItem('skillbridge_role');
-    navigate('/');
-    setMobileMenuOpen(false);
-  };
+  useEffect(() => {
+    const syncAuth = () => {
+      setRole(localStorage.getItem('skillbridge_role'));
+      setToken(localStorage.getItem('skillbridge_token'));
+    };
+
+    window.addEventListener('storage', syncAuth);
+    window.addEventListener('auth-change', syncAuth);
+
+    return () => {
+      window.removeEventListener('storage', syncAuth);
+      window.removeEventListener('auth-change', syncAuth);
+    };
+  }, []);
+
+const handleLogout = () => {
+  localStorage.removeItem('skillbridge_token');
+  localStorage.removeItem('skillbridge_role');
+  setToken(null);
+  setRole(null);
+  navigate('/');
+  setMobileMenuOpen(false);
+};
 
   const navLinkClasses = ({ isActive }) =>
     `text-sm font-medium transition-colors hover:text-brand-blue ${

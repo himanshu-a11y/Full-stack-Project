@@ -48,6 +48,7 @@ const StudentRegister = () => {
       const res = await axios.post('/api/student/register', formData);
       localStorage.setItem('skillbridge_token', res.data.token);
       localStorage.setItem('skillbridge_role', 'student');
+      window.dispatchEvent(new Event('auth-change'));
       navigate('/student/profile');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Note: Backend auth routes might be disabled.');

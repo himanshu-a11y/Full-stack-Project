@@ -32,6 +32,7 @@ const EmployerRegister = () => {
       const res = await axios.post('/api/employer/register', formData);
       localStorage.setItem('skillbridge_token', res.data.token);
       localStorage.setItem('skillbridge_role', 'employer');
+      window.dispatchEvent(new Event('auth-change'));
       navigate('/employer/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
