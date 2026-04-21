@@ -6,6 +6,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState(localStorage.getItem('skillbridge_role'));
   const [token, setToken] = useState(localStorage.getItem('skillbridge_token'));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const syncAuth = () => {

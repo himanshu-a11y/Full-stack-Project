@@ -51,4 +51,3 @@ to jobs using a scored aggregation pipeline (trade + district + certifications).
 | GET | /api/jobs | None | Paginated job list |
 | GET | /api/jobs/:id/candidates | Employer | Matched candidates with scores |
 | POST | /api/admin/import | None | Bulk CSV student import |
->>>>>>> pratham
