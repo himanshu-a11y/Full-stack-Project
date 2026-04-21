@@ -29,3 +29,22 @@ MONGO_URI="your_atlas_uri" node seed/seed.js
 | POST | `/api/jobs` | Employer JWT | Create a job |
 | GET | `/api/jobs` | None | Paginated job list |
 | GET | `/api/jobs/:id/candidates` | Employer JWT | Matched candidates with scores |
+
+## Project Description
+
+SkillBridge is a MERN stack based web application that connects ITI students with employers. Students can create profiles with their skills, trade, and certifications, while employers can post job opportunities. The system matches students with jobs based on trade, district, and certifications.
+
+## Technologies Used
+
+* MongoDB
+* Express.js
+* React.js
+* Node.js
+* JWT Authentication
+* Redis (for caching)
+
+## GitHub Repository Rules
+
+* This repository is public as required.
+* All group members will contribute through commits.
+* Each member is responsible for their assigned modules.
