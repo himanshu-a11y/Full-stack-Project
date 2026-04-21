@@ -1,4 +1,4 @@
-version: '3.8'
+﻿version: '3.8'
 
 services:
   mongo:
@@ -14,7 +14,9 @@ services:
       - "6379:6379"
 
   server:
-    build: ./server
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
     ports:
       - "5000:5000"
     env_file: .env
@@ -23,6 +25,7 @@ services:
       - redis
     volumes:
       - ./server:/app
+      - ./shared:/app/shared
 
   client:
     build: ./client
