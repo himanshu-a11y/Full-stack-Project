@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const { TRADES, DISTRICTS, CERTIFICATIONS } = require('../shared/constants');
+const constants = require('../../shared/constants');
+const { TRADES, DISTRICTS, CERTIFICATIONS } = constants;
 
 const JobSchema = new mongoose.Schema({
   title:        { type: String },

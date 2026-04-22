@@ -24,7 +24,7 @@ app.use('/api/student', studentRoutes); // /api/student/profile
 app.use('/api/admin', adminRoutes);     // /api/admin/import
 
 // Mount — M2
-app.use('/api', jobRoutes);             // /api/jobs
+app.use('/api/jobs', jobRoutes);             // /api/jobs
 
 // Health check
 app.get('/', (req, res) => res.send('SkillBridge API running ✅'));
