@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from '../api/axios';
-import constants from '../../../shared/constants.js';
-const { TRADES, DISTRICTS, CERTIFICATIONS } = constants;
+import { TRADES, DISTRICTS, CERTIFICATIONS } from '../../../shared/constants.js';
 import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';

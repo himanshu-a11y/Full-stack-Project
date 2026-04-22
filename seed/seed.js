@@ -1,9 +1,8 @@
+import { TRADES, DISTRICTS, CERTIFICATIONS } from '../shared/constants.js';
+
 require('dotenv').config({ path: '../.env' });
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-
-const constants = require('../shared/constants');
-const { TRADES, DISTRICTS, CERTIFICATIONS } = constants;
 
 // local mongoose schemaaa
 const StudentSchema = new mongoose.Schema({

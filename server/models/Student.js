@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const constants = require('../../shared/constants');
+const constants = require('../../shared/constants.cjs');
 const { TRADES } = constants;
 
 const studentSchema = new mongoose.Schema({

@@ -25,7 +25,7 @@ services:
       - redis
     volumes:
       - ./server:/app
-      - ./shared:/app/shared
+      - ./shared:/shared
 
   client:
     build: ./client
@@ -33,6 +33,8 @@ services:
       - "5173:5173"
     depends_on:
       - server
+    volumes:
+      - ./shared:/shared
 
 volumes:
   mongo_data:
