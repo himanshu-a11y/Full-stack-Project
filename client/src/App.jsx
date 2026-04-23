@@ -25,23 +25,12 @@ const NotFound = () => (
 const App = () => {
   return (
     <BrowserRouter>
-<<<<<<< Updated upstream
       <Navbar />
       <Suspense fallback={
         <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy"></div>
         </div>
       }>
-=======
-      <Suspense
-        fallback={
-          <div style={{ textAlign: "center", marginTop: "60px" }}>
-            Loading...
-          </div>
-        }
-      >
-        <Navbar />
->>>>>>> Stashed changes
         <Routes>
           {/* Default redirect to landing page */}
           <Route path="/" element={<Navigate to="/home" replace />} />
