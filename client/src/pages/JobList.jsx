@@ -5,6 +5,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import Footer from '../components/Footer';
 
 const TRADES = ['Electrician', 'Fitter', 'Welder', 'Turner', 'Mechanic', 'Plumber', 'Carpenter', 'Painter', 'Draughtsman', 'COPA'];
 const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Mehsana', 'Anand', 'Bhavnagar', 'Jamnagar', 'Junagadh'];
@@ -65,7 +66,8 @@ const JobList = () => {
   });
 
   return (
-    <div className="bg-slate-50 min-h-[calc(100vh-64px)] py-10">
+    <>
+      <div className="bg-slate-50 min-h-[calc(100vh-64px)] py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-brand-navy mb-2">Find the right job</h1>
@@ -169,6 +171,8 @@ const JobList = () => {
         </div>
       </div>
     </div>
+    <Footer />
+  </>
   );
 };
 

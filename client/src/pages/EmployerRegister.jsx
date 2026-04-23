@@ -5,6 +5,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
 import Alert from '../components/ui/Alert';
+import Footer from '../components/Footer';
 
 const EmployerRegister = () => {
   const navigate = useNavigate();
@@ -41,7 +42,8 @@ const EmployerRegister = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4">
+    <>
+      <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 shadow-card-hover md:my-10">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Employer Registration</h2>
@@ -106,6 +108,8 @@ const EmployerRegister = () => {
         </div>
       </Card>
     </div>
+    <Footer />
+  </>
   );
 };
 

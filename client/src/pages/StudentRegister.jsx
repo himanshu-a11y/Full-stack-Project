@@ -5,6 +5,7 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
+import Footer from '../components/Footer';
 
 const TRADES = ['Electrician', 'Fitter', 'Welder', 'Turner', 'Mechanic', 'Plumber', 'Carpenter', 'Painter', 'Draughtsman', 'COPA'];
 const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Mehsana', 'Anand', 'Bhavnagar', 'Jamnagar', 'Junagadh'];
@@ -57,7 +58,8 @@ const StudentRegister = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4 py-12">
+    <>
+      <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4 py-12">
       <Card className="w-full max-w-2xl p-8 md:p-10 shadow-card-hover border-t-4 border-t-brand-blue">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Student Registration</h2>
@@ -168,6 +170,8 @@ const StudentRegister = () => {
         </div>
       </Card>
     </div>
+    <Footer />
+  </>
   );
 };
 
