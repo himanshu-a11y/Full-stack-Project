@@ -10,12 +10,12 @@ app.use(cors());
 app.use(express.json());
 
 // auth routes        ← M1 will uncomment these
-// const authRoutes    = require('./routes/auth');
-// const studentRoutes = require('./routes/student');
-// const adminRoutes   = require('./routes/admin');
-// app.use('/api', authRoutes);
-// app.use('/api', studentRoutes);
-// app.use('/api', adminRoutes);
+const authRoutes    = require('./routes/auth');
+const studentRoutes = require('./routes/student');
+const adminRoutes   = require('./routes/admin');
+app.use('/api', authRoutes);
+app.use('/api', studentRoutes);
+app.use('/api', adminRoutes);
 
 // job routes         ← M2
 const jobRoutes = require('./routes/jobs');

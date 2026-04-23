@@ -22,7 +22,8 @@ services:
       - mongo
       - redis
     volumes:
-      - ./server:/app
+      - ./server:/app/server
+      - ./shared:/app/shared
 
   client:
     build: ./client
