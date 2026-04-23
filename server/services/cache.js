@@ -3,7 +3,15 @@ const Redis = require('ioredis');
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
 redis.on('connect', () => console.log('Redis connected'));
-redis.on('error',   err  => console.error('Redis error:', err));
+let lastRedisErrorAt = 0;
+redis.on('error', (err) => {
+  // Avoid spamming logs during reconnect loops (e.g. when running without Docker).
+  const now = Date.now();
+  if (now - lastRedisErrorAt > 10_000) {
+    console.error('Redis error:', err);
+    lastRedisErrorAt = now;
+  }
+});
 
 const KEY_PREFIX = 'match:';
 const TTL_SECONDS = 1800; // 30 minutes

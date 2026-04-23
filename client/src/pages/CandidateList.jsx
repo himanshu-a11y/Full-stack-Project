@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import Sidebar from '../components/ui/Sidebar';
@@ -26,7 +26,7 @@ const CandidateList = () => {
 
   const totalWeight = weights.tradeW + weights.districtW + weights.certW;
 
-  const fetchCandidates = async (w) => {
+  const fetchCandidates = useCallback(async (w) => {
     setLoading(true);
     setError('');
     try {
@@ -43,11 +43,11 @@ const CandidateList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    fetchCandidates(weights);
-  }, []);
+    fetchCandidates({ tradeW: 40, districtW: 30, certW: 30 });
+  }, [fetchCandidates]);
 
   const handleWeightChange = (e) => {
     const { name, value } = e.target;

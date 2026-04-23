@@ -2,6 +2,48 @@ import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Button from './ui/Button';
 
+const NavItems = ({ token, role, navLinkClasses, closeMobileMenu, handleLogout }) => (
+  <>
+    <NavLink to="/jobs" className={navLinkClasses} onClick={closeMobileMenu}>
+      Browse Jobs
+    </NavLink>
+
+    {!token && (
+      <>
+        <NavLink to="/student/login" className={navLinkClasses} onClick={closeMobileMenu}>
+          Student Login
+        </NavLink>
+        <div className="h-4 w-px bg-gray-300 hidden md:block"></div>
+        <NavLink to="/employer/login" className={navLinkClasses} onClick={closeMobileMenu}>
+          Employer Login
+        </NavLink>
+      </>
+    )}
+
+    {token && role === 'student' && (
+      <>
+        <NavLink to="/student/profile" className={navLinkClasses} onClick={closeMobileMenu}>
+          My Profile
+        </NavLink>
+        <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5">
+          Logout
+        </Button>
+      </>
+    )}
+
+    {token && role === 'employer' && (
+      <>
+        <NavLink to="/employer/dashboard" className={navLinkClasses} onClick={closeMobileMenu}>
+          Employer Dashboard
+        </NavLink>
+        <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5">
+          Logout
+        </Button>
+      </>
+    )}
+  </>
+);
+
 const Navbar = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState(localStorage.getItem('skillbridge_role'));
@@ -23,61 +65,21 @@ const Navbar = () => {
     };
   }, []);
 
-const handleLogout = () => {
-  localStorage.removeItem('skillbridge_token');
-  localStorage.removeItem('skillbridge_role');
-  setToken(null);
-  setRole(null);
-  navigate('/');
-  setMobileMenuOpen(false);
-};
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('skillbridge_token');
+    localStorage.removeItem('skillbridge_role');
+    setToken(null);
+    setRole(null);
+    navigate('/');
+    setMobileMenuOpen(false);
+  };
 
   const navLinkClasses = ({ isActive }) =>
     `text-sm font-medium transition-colors hover:text-brand-blue ${
       isActive ? 'text-brand-blue' : 'text-gray-600'
     }`;
-
-  const NavItems = () => (
-    <>
-      <NavLink to="/jobs" className={navLinkClasses} onClick={() => setMobileMenuOpen(false)}>
-        Browse Jobs
-      </NavLink>
-      
-      {!token && (
-        <>
-          <NavLink to="/student/login" className={navLinkClasses} onClick={() => setMobileMenuOpen(false)}>
-            Student Login
-          </NavLink>
-          <div className="h-4 w-px bg-gray-300 hidden md:block"></div>
-          <NavLink to="/employer/login" className={navLinkClasses} onClick={() => setMobileMenuOpen(false)}>
-            Employer Login
-          </NavLink>
-        </>
-      )}
-
-      {token && role === 'student' && (
-        <>
-          <NavLink to="/student/profile" className={navLinkClasses} onClick={() => setMobileMenuOpen(false)}>
-            My Profile
-          </NavLink>
-          <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5">
-            Logout
-          </Button>
-        </>
-      )}
-
-      {token && role === 'employer' && (
-        <>
-          <NavLink to="/employer/dashboard" className={navLinkClasses} onClick={() => setMobileMenuOpen(false)}>
-            Employer Dashboard
-          </NavLink>
-          <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5">
-            Logout
-          </Button>
-        </>
-      )}
-    </>
-  );
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
@@ -93,7 +95,13 @@ const handleLogout = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
-            <NavItems />
+            <NavItems
+              token={token}
+              role={role}
+              navLinkClasses={navLinkClasses}
+              closeMobileMenu={closeMobileMenu}
+              handleLogout={handleLogout}
+            />
           </div>
 
           <div className="flex items-center md:hidden">
@@ -116,7 +124,13 @@ const handleLogout = () => {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white">
           <div className="px-4 pt-2 pb-4 space-y-3 flex flex-col">
-            <NavItems />
+            <NavItems
+              token={token}
+              role={role}
+              navLinkClasses={navLinkClasses}
+              closeMobileMenu={closeMobileMenu}
+              handleLogout={handleLogout}
+            />
           </div>
         </div>
       )}

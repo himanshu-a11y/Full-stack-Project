@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { TRADES, DISTRICTS, CERTIFICATIONS } from '../../../shared/constants.js';
 import Sidebar from '../components/ui/Sidebar';
@@ -9,8 +9,6 @@ import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
 
 const PostJob = () => {
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     title: '',
     trade: '',

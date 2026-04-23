@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from '../api/axios';
+import { TRADES, DISTRICTS } from '../../../shared/constants.js';
 import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -12,12 +12,9 @@ const StudentProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [updating, setUpdating] = useState(false);
-  
-  const TRADES = ['Electrician', 'Fitter', 'Welder', 'Turner', 'Mechanic', 'Plumber', 'Carpenter', 'Painter', 'Draughtsman', 'COPA'];
-  const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Mehsana', 'Anand', 'Bhavnagar', 'Jamnagar', 'Junagadh'];
 
   useEffect(() => {
-    // Simulated fetch - Backend student route is commented out inside server/index.js
+    // Simulated fetch (profile read API not implemented yet)
     setTimeout(() => {
       setProfile({
         name: 'Jane Doe',
@@ -70,7 +67,6 @@ const StudentProfile = () => {
     setUpdating(true);
     try {
       // Mock API call to update profile
-      // await axios.put('/api/student/profile', formData);
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
       setProfile(formData);
       setIsEditing(false);

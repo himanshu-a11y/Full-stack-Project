@@ -33,6 +33,7 @@ const App = () => {
           </div>
         }
       >
+        <Navbar />
         <Routes>
           {/* Default redirect to landing page */}
           <Route path="/" element={<Navigate to="/home" replace />} />
