@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from '../api/axios';
+<<<<<<< Updated upstream
+=======
+import { TRADES, DISTRICTS } from '../../../shared/constants.js';
+>>>>>>> Stashed changes
 import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -17,6 +21,7 @@ const StudentProfile = () => {
   const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Mehsana', 'Anand', 'Bhavnagar', 'Jamnagar', 'Junagadh'];
 
   useEffect(() => {
+<<<<<<< Updated upstream
     // Simulated fetch - Backend student route is commented out inside server/index.js
     setTimeout(() => {
       setProfile({
@@ -30,6 +35,19 @@ const StudentProfile = () => {
       });
       setLoading(false);
     }, 800);
+=======
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get('/api/student/profile');
+        setProfile(res.data.student);
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+>>>>>>> Stashed changes
   }, []);
 
   const sidebarLinks = [
@@ -69,13 +87,19 @@ const StudentProfile = () => {
   const handleSave = async () => {
     setUpdating(true);
     try {
+<<<<<<< Updated upstream
       // Mock API call to update profile
       // await axios.put('/api/student/profile', formData);
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
       setProfile(formData);
+=======
+      const res = await axios.put('/api/student/profile', formData);
+      setProfile(res.data.student);
+>>>>>>> Stashed changes
       setIsEditing(false);
     } catch (err) {
       console.error("Failed to update profile", err);
+      alert(err.response?.data?.message || "Failed to update profile");
     } finally {
       setUpdating(false);
     }
