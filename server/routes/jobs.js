@@ -18,17 +18,26 @@ try {
 // POST /api/jobs — employer creates a job (protected)
 router.post('/', employerGuard, async (req, res) => {
   try {
-    const { title, trade, district, certRequired, description } = req.body;
+    const { title, trade, country, state, district, certRequired, description } = req.body;
     const job = await Job.create({
       title,
       trade,
-      district,
+      country: country || 'India',
+      state: state || '',
+      district: district || '',
       certRequired: certRequired || [],
       description,
       employerId: req.employer.id,
     });
     return res.status(201).json({
-      job: { _id: job._id, title: job.title, trade: job.trade, district: job.district },
+      job: {
+        _id: job._id,
+        title: job.title,
+        trade: job.trade,
+        country: job.country || 'India',
+        state: job.state || '',
+        district: job.district || '',
+      },
     });
   } catch (err) {
     console.error('POST /api/jobs error:', err);
@@ -43,10 +52,16 @@ router.get('/', async (req, res) => {
     const page  = Math.max(1, parseInt(req.query.page,  10) || 1);
     const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
     const skip  = (page - 1) * limit;
+    const filter = {};
+
+    if (req.query.trade) filter.trade = req.query.trade;
+    if (req.query.country) filter.country = { $regex: new RegExp(`^${req.query.country}$`, 'i') };
+    if (req.query.state) filter.$or = [{ state: { $regex: new RegExp(`^${req.query.state}$`, 'i') } }, { district: { $regex: new RegExp(`^${req.query.state}$`, 'i') } }];
+    if (req.query.district) filter.district = { $regex: new RegExp(`^${req.query.district}$`, 'i') };
 
     const [jobs, total] = await Promise.all([
-      Job.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      Job.countDocuments({}),
+      Job.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Job.countDocuments(filter),
     ]);
 
     return res.json({ jobs, total, hasMore: page * limit < total });

@@ -14,6 +14,7 @@ app.use(express.json());
 const authRoutes    = require('./routes/auth');
 const studentRoutes = require('./routes/student');
 const adminRoutes   = require('./routes/admin');
+const locationRoutes = require('./routes/locations');
 
 // Routes — M2 (Bobby)
 const jobRoutes     = require('./routes/jobs');
@@ -22,6 +23,7 @@ const jobRoutes     = require('./routes/jobs');
 app.use('/api', authRoutes);            // /api/student/register, /api/employer/register, /api/auth/login
 app.use('/api/student', studentRoutes); // /api/student/profile
 app.use('/api/admin', adminRoutes);     // /api/admin/import
+app.use('/api/locations', locationRoutes); // /api/locations/countries, /api/locations/states
 
 // Mount — M2
 app.use('/api/jobs', jobRoutes);             // /api/jobs

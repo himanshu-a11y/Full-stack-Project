@@ -9,6 +9,8 @@ const studentSchema = new mongoose.Schema({
   email:          { type: String, required: true, unique: true },
   password:       { type: String, required: true },
   trade:          { type: String, enum: TRADES },
+  country:        { type: String, default: 'India' },
+  state:          { type: String },
   district:       { type: String },
   certifications: [{ type: String }],
   availability:   { type: Boolean, default: true },

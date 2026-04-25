@@ -12,5 +12,9 @@ const DISTRICTS = [
 ];
 
 const CERTIFICATIONS = ['NCVT', 'SCVT', 'NAC', 'CTI', 'CITS', 'NIMI'];
+const COUNTRIES = ['India'];
+const STATES_BY_COUNTRY = {
+  India: DISTRICTS,
+};
 
-module.exports = { TRADES, DISTRICTS, CERTIFICATIONS };
+module.exports = { TRADES, DISTRICTS, CERTIFICATIONS, COUNTRIES, STATES_BY_COUNTRY };

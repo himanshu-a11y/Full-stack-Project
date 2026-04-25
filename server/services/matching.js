@@ -16,10 +16,11 @@ async function matchCandidates(job, weights = {}) {
       $match: {
         status:       'active',
         availability: true,
+        trade:        job.trade,
       },
     },
 
-    // Stage 2: compute score — trade + district + cert overlap
+    // Stage 2: compute score — trade + state/district + cert overlap
     {
       $addFields: {
         score: {
@@ -33,7 +34,12 @@ async function matchCandidates(job, weights = {}) {
             },
             {
               $cond: {
-                if:   { $eq: ['$district', job.district] },
+                if: {
+                  $eq: [
+                    { $ifNull: ['$state', '$district'] },
+                    (job.state || job.district),
+                  ],
+                },
                 then: w.district,
                 else: 0,
               },
@@ -74,6 +80,8 @@ async function matchCandidates(job, weights = {}) {
         _id:            1,
         name:           1,
         trade:          1,
+        country:        1,
+        state:          { $ifNull: ['$state', '$district'] },
         district:       1,
         certifications: 1,
         phone:          1,

@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
-import { TRADES, DISTRICTS, CERTIFICATIONS } from '../../../shared/constants.js';
+import { TRADES, CERTIFICATIONS } from '../../../shared/constants.js';
 import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
+import { getCountries, getStates, getDistricts } from '../api/locations';
 
 const PostJob = () => {
   const [formData, setFormData] = useState({
     title: '',
     trade: '',
+    country: 'India',
+    state: '',
     district: '',
     certRequired: [],
     description: '',
@@ -22,6 +25,9 @@ const PostJob = () => {
   const [jobsLoading, setJobsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
 
   useEffect(() => {
     const fetchMyJobs = async () => {
@@ -37,7 +43,39 @@ const PostJob = () => {
     fetchMyJobs();
   }, [success]);
 
+  useEffect(() => {
+    const loadCountries = async () => {
+      const data = await getCountries();
+      setCountries(data);
+    };
+    loadCountries();
+  }, []);
+
+  useEffect(() => {
+    const loadStates = async () => {
+      const data = await getStates(formData.country);
+      setStates(data);
+    };
+    loadStates();
+  }, [formData.country]);
+
+  useEffect(() => {
+    const loadDistricts = async () => {
+      const data = await getDistricts(formData.country, formData.state);
+      setDistricts(data);
+    };
+    loadDistricts();
+  }, [formData.country, formData.state]);
+
   const handleChange = (e) => {
+    if (e.target.name === 'country') {
+      setFormData({ ...formData, country: e.target.value, state: '', district: '' });
+      return;
+    }
+    if (e.target.name === 'state') {
+      setFormData({ ...formData, state: e.target.value, district: '' });
+      return;
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -59,7 +97,7 @@ const PostJob = () => {
     try {
       const res = await axios.post('/api/jobs', formData);
       setSuccess('Job posted successfully! Job ID: ' + res.data.job._id);
-      setFormData({ title: '', trade: '', district: '', certRequired: [], description: '' });
+      setFormData({ title: '', trade: '', country: formData.country || 'India', state: '', district: '', certRequired: [], description: '' });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to post job. Please try again.');
     } finally {
@@ -130,16 +168,48 @@ const PostJob = () => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700">District</label>
+                <label className="text-sm font-medium text-gray-700">Country</label>
+                <select
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                >
+                  <option value="">Select country...</option>
+                  {countries.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">State</label>
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                >
+                  <option value="">Select state...</option>
+                  {states.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">District / City</label>
                 <select
                   name="district"
                   value={formData.district}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                  disabled={!formData.state}
                 >
                   <option value="">Select district...</option>
-                  {DISTRICTS.map((d) => (
+                  {districts.map((d) => (
                     <option key={d} value={d}>{d}</option>
                   ))}
                 </select>
@@ -203,7 +273,7 @@ const PostJob = () => {
                   <tr className="bg-gray-50 text-gray-600 text-sm">
                     <th className="px-4 py-3 font-medium border-b border-gray-200 rounded-tl-lg">Title</th>
                     <th className="px-4 py-3 font-medium border-b border-gray-200">Trade</th>
-                    <th className="px-4 py-3 font-medium border-b border-gray-200">District</th>
+                    <th className="px-4 py-3 font-medium border-b border-gray-200">Location</th>
                     <th className="px-4 py-3 font-medium border-b border-gray-200 rounded-tr-lg">Action</th>
                   </tr>
                 </thead>
@@ -212,7 +282,7 @@ const PostJob = () => {
                     <tr key={job._id} className="border-b border-gray-100 hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-4 font-medium text-gray-900">{job.title}</td>
                       <td className="px-4 py-4">{job.trade}</td>
-                      <td className="px-4 py-4">{job.district}</td>
+                      <td className="px-4 py-4">{job.state || job.district}, {job.country || 'India'}</td>
                       <td className="px-4 py-4">
                         <Link
                           to={`/employer/jobs/${job._id}/candidates`}

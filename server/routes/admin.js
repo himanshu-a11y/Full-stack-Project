@@ -32,7 +32,9 @@ router.post('/import', upload.single('file'), async (req, res) => {
             name:           row.name,
             phone:          row.phone,
             trade:          row.trade,
-            district:       row.district,
+            country:        row.country || 'India',
+            state:          row.state || row.district,
+            district:       row.state || row.district,
             certifications: certifications,
             status:         row.status || 'active'
           }

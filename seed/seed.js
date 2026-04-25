@@ -25,6 +25,8 @@ const StudentSchema = new mongoose.Schema({
   password:      { type: String, required: true },
   trade:         { type: String, enum: TRADES },
   district:      { type: String, enum: DISTRICTS },
+  country:       { type: String, default: 'India' },
+  state:         { type: String },
   certifications:[{ type: String }],
   availability:  { type: Boolean, default: true },
   status:        { type: String, default: 'active' },
@@ -47,6 +49,8 @@ const JobSchema = new mongoose.Schema({
   title:        { type: String },
   trade:        { type: String, enum: TRADES },
   district:     { type: String, enum: DISTRICTS },
+  country:      { type: String, default: 'India' },
+  state:        { type: String },
   certRequired: [{ type: String }],
   description:  { type: String },
   employerId:   { type: mongoose.Schema.Types.ObjectId },
@@ -106,6 +110,8 @@ async function seed() {
       phone:          `98${String(i).padStart(8, '0')}`,
       password:       hashedPassword,
       trade,
+      country:        'India',
+      state:          district,
       district,
       certifications: certs,
       availability:   true,
@@ -140,6 +146,8 @@ async function seed() {
   const jobs = jobTemplates.map(t => ({
     ...t,
     description: `We are looking for a skilled ${t.trade} in the ${t.district} region.`,
+    country: 'India',
+    state: t.district,
     employerId:  insertedEmployers[0]._id,
   }));
 

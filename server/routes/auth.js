@@ -8,15 +8,42 @@ const Employer = require('../models/Employer');
 // POST /api/student/register
 router.post('/student/register', async (req, res) => {
   try {
-    const { name, email, password, phone, trade, district, certifications } = req.body;
-    const student = new Student({ name, email, password, phone, trade, district, certifications });
+    const { name, email, password, phone, trade, country, state, district, certifications } = req.body;
+    const student = new Student({
+      name,
+      email,
+      password,
+      phone,
+      trade,
+      country: country || 'India',
+      state: state || '',
+      district: district || '',
+      certifications,
+    });
     await student.save();
     const token = jwt.sign(
-      { id: student._id, role: 'student', trade: student.trade, district: student.district },
+      {
+        id: student._id,
+        role: 'student',
+        trade: student.trade,
+        country: student.country,
+        state: student.state,
+        district: student.district,
+      },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    res.status(201).json({ token, student: { _id: student._id, name, trade, district } });
+    res.status(201).json({
+      token,
+      student: {
+        _id: student._id,
+        name,
+        trade,
+        country: student.country,
+        state: student.state,
+        district: student.district,
+      },
+    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -52,8 +79,22 @@ router.post('/auth/login', async (req, res) => {
 
     let payload, profile;
     if (role === 'student') {
-      payload = { id: user._id, role: 'student', trade: user.trade, district: user.district };
-      profile = { _id: user._id, name: user.name, trade: user.trade, district: user.district };
+      payload = {
+        id: user._id,
+        role: 'student',
+        trade: user.trade,
+        country: user.country || 'India',
+        state: user.state || '',
+        district: user.district || '',
+      };
+      profile = {
+        _id: user._id,
+        name: user.name,
+        trade: user.trade,
+        country: user.country || 'India',
+        state: user.state || '',
+        district: user.district || '',
+      };
     } else {
       payload = { id: user._id, role: 'employer', companyName: user.companyName };
       profile = { _id: user._id, companyName: user.companyName };

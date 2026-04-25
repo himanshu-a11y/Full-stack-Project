@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 const constants = require('../../shared/constants.cjs');
-const { TRADES, DISTRICTS, CERTIFICATIONS } = constants;
+const { TRADES, CERTIFICATIONS } = constants;
 
 const JobSchema = new mongoose.Schema({
   title:        { type: String },
   trade:        { type: String, enum: TRADES },
-  district:     { type: String, enum: DISTRICTS },
+  country:      { type: String, default: 'India' },
+  state:        { type: String },
+  district:     { type: String },
   certRequired: [{ type: String, enum: CERTIFICATIONS }],
   description:  { type: String },
   employerId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Employer' },

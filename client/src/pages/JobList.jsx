@@ -1,25 +1,27 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
-import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Footer from '../components/Footer';
-
-const TRADES = ['Electrician', 'Fitter', 'Welder', 'Turner', 'Mechanic', 'Plumber', 'Carpenter', 'Painter', 'Draughtsman', 'COPA'];
-const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Mehsana', 'Anand', 'Bhavnagar', 'Jamnagar', 'Junagadh'];
+import { TRADES } from '../../../shared/constants.js';
+import { getCountries, getStates, getDistricts } from '../api/locations';
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
   
   const observer = useRef();
   
   const [filters, setFilters] = useState({
     trade: '',
+    country: '',
+    state: '',
     district: '',
   });
 
@@ -36,20 +38,47 @@ const JobList = () => {
   }, [loading, hasMore]);
 
   useEffect(() => {
-    // Reset page and jobs when filters change (if handled by API in future). 
-    // Right now, it's just client-side, but it's good practice.
-  }, [filters]);
+    const loadCountries = async () => {
+      const data = await getCountries();
+      setCountries(data);
+    };
+    loadCountries();
+  }, []);
+
+  useEffect(() => {
+    const loadStates = async () => {
+      const data = await getStates(filters.country);
+      setStates(data);
+    };
+    loadStates();
+  }, [filters.country]);
+
+  useEffect(() => {
+    const loadDistricts = async () => {
+      const data = await getDistricts(filters.country, filters.state);
+      setDistricts(data);
+    };
+    loadDistricts();
+  }, [filters.country, filters.state]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters.trade, filters.country, filters.state, filters.district]);
 
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`/api/jobs?page=${page}&limit=10`);
-        setJobs(prevJobs => {
-          if (page === 1) return res.data.jobs || [];
-          return [...prevJobs, ...(res.data.jobs || [])];
-        });
-        setHasMore(res.data.jobs && res.data.jobs.length > 0);
+        const params = new URLSearchParams({ page: String(page), limit: '10' });
+        if (filters.trade) params.set('trade', filters.trade);
+        if (filters.country) params.set('country', filters.country);
+        if (filters.state) params.set('state', filters.state);
+        if (filters.district) params.set('district', filters.district);
+
+        const res = await axios.get(`/api/jobs?${params.toString()}`);
+        const fetchedJobs = res.data.jobs || [];
+        setJobs(prevJobs => (page === 1 ? fetchedJobs : [...prevJobs, ...fetchedJobs]));
+        setHasMore(Boolean(res.data.hasMore));
       } catch (err) {
         console.error('Failed to fetch jobs', err);
       } finally {
@@ -57,13 +86,7 @@ const JobList = () => {
       }
     };
     fetchJobs();
-  }, [page]);
-
-  const filteredJobs = jobs.filter(job => {
-    if (filters.trade && job.trade !== filters.trade) return false;
-    if (filters.district && job.district !== filters.district) return false;
-    return true;
-  });
+  }, [page, filters.trade, filters.country, filters.state, filters.district]);
 
   return (
     <>
@@ -92,21 +115,45 @@ const JobList = () => {
                   </select>
                 </div>
                 <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">Country</label>
+                  <select
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white"
+                    value={filters.country}
+                    onChange={(e) => setFilters(prev => ({ ...prev, country: e.target.value, state: '', district: '' }))}
+                  >
+                    <option value="">All Countries</option>
+                    {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">State</label>
+                  <select
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white"
+                    value={filters.state}
+                    onChange={(e) => setFilters(prev => ({ ...prev, state: e.target.value, district: '' }))}
+                    disabled={!filters.country}
+                  >
+                    <option value="">All States</option>
+                    {states.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-gray-700">District</label>
                   <select
                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white"
                     value={filters.district}
                     onChange={(e) => setFilters(prev => ({ ...prev, district: e.target.value }))}
+                    disabled={!filters.state}
                   >
                     <option value="">All Districts</option>
-                    {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <Button 
                   variant="outline" 
                   fullWidth 
-                  onClick={() => setFilters({ trade: '', district: '' })}
-                  disabled={!filters.trade && !filters.district}
+                  onClick={() => setFilters({ trade: '', country: '', state: '', district: '' })}
+                  disabled={!filters.trade && !filters.country && !filters.state && !filters.district}
                   className="mt-2"
                 >
                   Clear Filters
@@ -122,20 +169,20 @@ const JobList = () => {
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mb-4"></div>
                 <p className="text-gray-500 font-medium">Loading jobs...</p>
               </div>
-            ) : filteredJobs.length === 0 ? (
+            ) : jobs.length === 0 ? (
               <Card className="p-12 text-center border-dashed">
                 <p className="text-gray-500 text-lg">No jobs found matching your criteria.</p>
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => setFilters({ trade: '', district: '' })}
+                  onClick={() => setFilters({ trade: '', country: '', state: '', district: '' })}
                 >
                   View all jobs
                 </Button>
               </Card>
             ) : (
-              filteredJobs.map((job, index) => {
-                const isLast = filteredJobs.length === index + 1;
+              jobs.map((job, index) => {
+                const isLast = jobs.length === index + 1;
                 return (
                 <Card 
                   ref={isLast ? lastJobElementRef : null} 
@@ -149,7 +196,7 @@ const JobList = () => {
                       
                       <div className="flex flex-wrap gap-2">
                         <Badge variant="blue"><span className="font-semibold text-gray-500 mr-1">Trade:</span> {job.trade}</Badge>
-                        <Badge variant="green"><span className="font-semibold text-gray-500 mr-1">Loc:</span> {job.district}</Badge>
+                        <Badge variant="green"><span className="font-semibold text-gray-500 mr-1">Loc:</span> {(job.state || job.district)}, {job.country || 'India'}</Badge>
                         {job.certRequired?.map(cert => (
                           <Badge key={cert} variant="orange">{cert}</Badge>
                         ))}

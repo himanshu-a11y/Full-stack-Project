@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from '../api/axios';
-import { TRADES, DISTRICTS } from '../../../shared/constants.js';
+import { TRADES } from '../../../shared/constants.js';
 import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Input from '../components/ui/Input';
+import { getCountries, getStates, getDistricts } from '../api/locations';
 
 const StudentProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -13,6 +14,9 @@ const StudentProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [updating, setUpdating] = useState(false);
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -27,6 +31,33 @@ const StudentProfile = () => {
     };
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    const loadCountries = async () => {
+      const data = await getCountries();
+      setCountries(data);
+    };
+    loadCountries();
+  }, []);
+
+  useEffect(() => {
+    const country = formData.country || profile?.country || 'India';
+    const loadStates = async () => {
+      const data = await getStates(country);
+      setStates(data);
+    };
+    loadStates();
+  }, [formData.country, profile?.country]);
+
+  useEffect(() => {
+    const country = formData.country || profile?.country || 'India';
+    const state = formData.state || profile?.state || '';
+    const loadDistricts = async () => {
+      const data = await getDistricts(country, state);
+      setDistricts(data);
+    };
+    loadDistricts();
+  }, [formData.country, formData.state, profile?.country, profile?.state]);
 
   const sidebarLinks = [
     {
@@ -59,6 +90,14 @@ const StudentProfile = () => {
   };
 
   const handleChange = (e) => {
+    if (e.target.name === 'country') {
+      setFormData({ ...formData, country: e.target.value, state: '', district: '' });
+      return;
+    }
+    if (e.target.name === 'state') {
+      setFormData({ ...formData, state: e.target.value, district: '' });
+      return;
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -142,14 +181,41 @@ const StudentProfile = () => {
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700">District</label>
+                  <label className="text-sm font-medium text-gray-700">Country</label>
+                  <select
+                    name="country"
+                    value={formData.country || 'India'}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                  >
+                    {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">State</label>
+                  <select
+                    name="state"
+                    value={formData.state || ''}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                  >
+                    <option value="">Select state...</option>
+                    {states.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">District / City</label>
                   <select
                     name="district"
                     value={formData.district || ''}
                     onChange={handleChange}
                     className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                    disabled={!formData.state}
                   >
-                    {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                    <option value="">Select district...</option>
+                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
               </div>
@@ -184,8 +250,8 @@ const StudentProfile = () => {
                       <Badge variant="blue" className="text-sm px-3 py-1">{profile?.trade}</Badge>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 mb-1">District</p>
-                      <Badge variant="green" className="text-sm px-3 py-1">{profile?.district}</Badge>
+                      <p className="text-sm text-gray-500 mb-1">Location</p>
+                      <Badge variant="green" className="text-sm px-3 py-1">{profile?.state || profile?.district}, {profile?.country || 'India'}</Badge>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-1">Certifications</p>
