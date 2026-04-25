@@ -13,7 +13,7 @@ const NavItems = ({ token, role, navLinkClasses, closeMobileMenu, handleLogout }
         <NavLink to="/student/login" className={navLinkClasses} onClick={closeMobileMenu}>
           Student Login
         </NavLink>
-        <div className="h-4 w-px bg-gray-300 hidden md:block"></div>
+        <div className="h-4 w-px bg-white/20 hidden md:block"></div>
         <NavLink to="/employer/login" className={navLinkClasses} onClick={closeMobileMenu}>
           Employer Login
         </NavLink>
@@ -25,7 +25,7 @@ const NavItems = ({ token, role, navLinkClasses, closeMobileMenu, handleLogout }
         <NavLink to="/student/profile" className={navLinkClasses} onClick={closeMobileMenu}>
           My Profile
         </NavLink>
-        <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5">
+        <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5 !text-white !border-white/20 hover:!bg-white/10">
           Logout
         </Button>
       </>
@@ -36,7 +36,7 @@ const NavItems = ({ token, role, navLinkClasses, closeMobileMenu, handleLogout }
         <NavLink to="/employer/dashboard" className={navLinkClasses} onClick={closeMobileMenu}>
           Employer Dashboard
         </NavLink>
-        <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5">
+        <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5 !text-white !border-white/20 hover:!bg-white/10">
           Logout
         </Button>
       </>
@@ -66,7 +66,6 @@ const Navbar = () => {
   }, []);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
-
   const handleLogout = () => {
     localStorage.removeItem('skillbridge_token');
     localStorage.removeItem('skillbridge_role');
@@ -77,21 +76,21 @@ const Navbar = () => {
   };
 
   const navLinkClasses = ({ isActive }) =>
-    `text-sm font-medium transition-colors hover:text-brand-blue ${
-      isActive ? 'text-brand-blue' : 'text-gray-600'
+    `text-sm font-medium transition-colors hover:text-white ${
+      isActive ? 'text-white' : 'text-gray-300'
     }`;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <nav className="sticky top-0 z-50 bg-brand-navy border-b border-white/10 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2">
-            <div className="bg-brand-blue text-white p-1.5 rounded-lg">
+            <div className="bg-white/10 text-white p-1.5 rounded-lg">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <span className="text-xl font-bold text-brand-navy tracking-tight">SkillBridge</span>
+            <span className="text-xl font-bold text-white tracking-tight">SkillBridge</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
@@ -107,7 +106,7 @@ const Navbar = () => {
           <div className="flex items-center md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-gray-500 hover:text-gray-900 focus:outline-none p-2"
+              className="text-gray-300 hover:text-white focus:outline-none p-2"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {mobileMenuOpen ? (
@@ -122,7 +121,7 @@ const Navbar = () => {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
+        <div className="md:hidden border-t border-white/10 bg-brand-navy">
           <div className="px-4 pt-2 pb-4 space-y-3 flex flex-col">
             <NavItems
               token={token}

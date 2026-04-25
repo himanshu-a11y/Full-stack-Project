@@ -13,3 +13,4 @@ const DISTRICTS = [
 const CERTIFICATIONS = ['NCVT', 'SCVT', 'NAC', 'CTI', 'CITS', 'NIMI'];
 
 export { TRADES, DISTRICTS, CERTIFICATIONS };
+

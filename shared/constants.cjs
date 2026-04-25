@@ -14,4 +14,3 @@ const DISTRICTS = [
 const CERTIFICATIONS = ['NCVT', 'SCVT', 'NAC', 'CTI', 'CITS', 'NIMI'];
 
 module.exports = { TRADES, DISTRICTS, CERTIFICATIONS };
-

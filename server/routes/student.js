@@ -21,7 +21,7 @@ router.get('/profile', studentGuard, async (req, res) => {
 // PUT /api/student/profile  (protected by studentGuard)
 router.put('/profile', studentGuard, async (req, res) => {
   try {
-    const { trade, district, certifications, availability } = req.body;
+    const { name, phone, trade, district, certifications, availability } = req.body;
 
     // Get current student to check if trade changed
     const existing = await Student.findById(req.student.id);
@@ -31,7 +31,7 @@ router.put('/profile', studentGuard, async (req, res) => {
     // Update only the allowed fields
     const updated = await Student.findByIdAndUpdate(
       req.student.id,
-      { $set: { trade, district, certifications, availability } },
+      { $set: { name, phone, trade, district, certifications, availability } },
       { new: true }
     );
 
