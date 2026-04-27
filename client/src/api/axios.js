@@ -6,6 +6,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('skillbridge_token');
+  console.log('Axios Interceptor - URL:', config.url, 'Token found:', !!token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

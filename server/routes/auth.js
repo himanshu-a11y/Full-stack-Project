@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Student = require('../models/Student');
 const Employer = require('../models/Employer');
+const employerGuard = require('../middleware/employerGuard');
 
 // POST /api/student/register
 router.post('/student/register', async (req, res) => {
@@ -63,6 +64,32 @@ router.post('/auth/login', async (req, res) => {
     res.json({ token, role, profile });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/employer/profile (protected by employerGuard)
+router.get('/employer/profile', employerGuard, async (req, res) => {
+  try {
+    const employer = await Employer.findById(req.employer.id).select('-password');
+    if (!employer) return res.status(404).json({ message: 'Employer not found' });
+    res.json({ employer });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch profile', error: err.message });
+  }
+});
+
+// PUT /api/employer/profile (protected by employerGuard)
+router.put('/employer/profile', employerGuard, async (req, res) => {
+  try {
+    const { companyName, email, city } = req.body;
+    const employer = await Employer.findByIdAndUpdate(
+      req.employer.id,
+      { companyName, email, city },
+      { new: true }
+    ).select('-password');
+    res.json({ employer });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update profile', error: err.message });
   }
 });
 

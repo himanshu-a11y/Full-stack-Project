@@ -1,10 +1,5 @@
 const mongoose = require('mongoose');
-<<<<<<< Updated upstream
-const constants = require('../../shared/constants.cjs');
-const { TRADES, DISTRICTS, CERTIFICATIONS } = constants;
-=======
 const { TRADES, DISTRICTS, CERTIFICATIONS } = require('../../shared/constants');
->>>>>>> Stashed changes
 
 const JobSchema = new mongoose.Schema({
   title:        { type: String },

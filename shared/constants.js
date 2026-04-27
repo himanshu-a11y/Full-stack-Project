@@ -1,15 +1,13 @@
 // ALL members import from here — never hardcode these strings
 
-const TRADES = [
+export const TRADES = [
   'Electrician', 'Fitter', 'Welder', 'Turner', 'Mechanic',
   'Plumber', 'Carpenter', 'Painter', 'Draughtsman', 'COPA'
 ];
 
-const DISTRICTS = [
+export const DISTRICTS = [
   'Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar',
   'Mehsana', 'Anand', 'Bhavnagar', 'Jamnagar', 'Junagadh'
 ];
 
-const CERTIFICATIONS = ['NCVT', 'SCVT', 'NAC', 'CTI', 'CITS', 'NIMI'];
-
-module.exports = { TRADES, DISTRICTS, CERTIFICATIONS };
+export const CERTIFICATIONS = ['NCVT', 'SCVT', 'NAC', 'CTI', 'CITS', 'NIMI'];

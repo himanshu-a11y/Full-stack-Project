@@ -23,7 +23,7 @@ services:
       - redis
     volumes:
       - ./server:/app/server
-      - ./shared:/app/shared
+      - ./shared:/app/server/shared
       - ./seed:/app/seed
       - /app/node_modules
 
@@ -35,6 +35,7 @@ services:
       - server
     volumes:
       - ./client:/app
+      - ./shared:/app/shared
       - /app/node_modules
 
 volumes:

@@ -2,51 +2,7 @@ import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Button from './ui/Button';
 
-<<<<<<< Updated upstream
-=======
-const NavItems = ({ token, role, navLinkClasses, closeMobileMenu, handleLogout }) => (
-  <>
-    <NavLink to="/jobs" className={navLinkClasses} onClick={closeMobileMenu}>
-      Browse Jobs
-    </NavLink>
 
-    {!token && (
-      <>
-        <NavLink to="/student/login" className={navLinkClasses} onClick={closeMobileMenu}>
-          Student Login
-        </NavLink>
-        <div className="h-4 w-px bg-white/20 hidden md:block"></div>
-        <NavLink to="/employer/login" className={navLinkClasses} onClick={closeMobileMenu}>
-          Employer Login
-        </NavLink>
-      </>
-    )}
-
-    {token && role === 'student' && (
-      <>
-        <NavLink to="/student/profile" className={navLinkClasses} onClick={closeMobileMenu}>
-          My Profile
-        </NavLink>
-        <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5 !text-white !border-white/20 hover:!bg-white/10">
-          Logout
-        </Button>
-      </>
-    )}
-
-    {token && role === 'employer' && (
-      <>
-        <NavLink to="/employer/dashboard" className={navLinkClasses} onClick={closeMobileMenu}>
-          Employer Dashboard
-        </NavLink>
-        <Button variant="outline" onClick={handleLogout} className="ml-2 !py-1.5 !text-white !border-white/20 hover:!bg-white/10">
-          Logout
-        </Button>
-      </>
-    )}
-  </>
-);
-
->>>>>>> Stashed changes
 const Navbar = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState(localStorage.getItem('skillbridge_role'));
@@ -125,11 +81,7 @@ const Navbar = () => {
   );
 
   return (
-<<<<<<< Updated upstream
-    <nav className="sticky top-0 z-50 bg-brand-navy border-b border-brand-navy shadow-lg">
-=======
     <nav className="sticky top-0 z-50 bg-brand-navy border-b border-white/10 shadow-lg">
->>>>>>> Stashed changes
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2">

@@ -89,7 +89,7 @@ const PostJob = () => {
 
       <div className="flex-1 p-6 md:p-10 max-w-5xl mx-auto overflow-y-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Employer Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Employer Profile</h1>
           <p className="text-gray-600">Manage your job listings and find the best candidates.</p>
         </div>
 
