@@ -10,10 +10,20 @@ const tradeEvents = new EventEmitter();
 // GET /api/student/profile (protected by studentGuard)
 router.get('/profile', studentGuard, async (req, res) => {
   try {
+<<<<<<< Updated upstream
     const student = await Student.findById(req.student.id).select('-password');
     if (!student) return res.status(404).json({ message: 'Student not found' });
     res.json({ student });
   } catch (err) {
+=======
+    console.log('Fetching profile for student ID:', req.student.id);
+    const student = await Student.findById(req.student.id).select('-password');
+    console.log('Fetched student:', student);
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+    res.json({ student });
+  } catch (err) {
+    console.error('Profile fetch error:', err);
+>>>>>>> Stashed changes
     res.status(500).json({ message: err.message });
   }
 });
@@ -21,16 +31,24 @@ router.get('/profile', studentGuard, async (req, res) => {
 // PUT /api/student/profile  (protected by studentGuard)
 router.put('/profile', studentGuard, async (req, res) => {
   try {
+<<<<<<< Updated upstream
     const { name, phone, trade, district, certifications, availability } = req.body;
+=======
+    const { name, email, phone, trade, district, certifications, availability } = req.body;
+>>>>>>> Stashed changes
 
     // Get current student to check if trade changed
     const existing = await Student.findById(req.student.id);
     const oldTrade = existing.trade;
 
-    // Update only the allowed fields
+    // Update the profile fields
     const updated = await Student.findByIdAndUpdate(
       req.student.id,
+<<<<<<< Updated upstream
       { $set: { name, phone, trade, district, certifications, availability } },
+=======
+      { $set: { name, email, phone, trade, district, certifications, availability } },
+>>>>>>> Stashed changes
       { new: true }
     );
 

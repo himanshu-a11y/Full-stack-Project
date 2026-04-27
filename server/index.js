@@ -17,9 +17,25 @@ app.use('/api', authRoutes);
 app.use('/api', studentRoutes);
 app.use('/api', adminRoutes);
 
+<<<<<<< Updated upstream
 // job routes         ← M2
 const jobRoutes = require('./routes/jobs');
 app.use('/api', jobRoutes);
+=======
+// Routes — M2 (Bobby)
+const jobRoutes     = require('./routes/jobs');
+
+// Routes — M1
+app.use('/api/student', studentRoutes); // /api/student/profile
+app.use('/api/admin', adminRoutes);     // /api/admin/import
+app.use('/api', authRoutes);            // /api/student/register, /api/employer/register, /api/auth/login
+
+// Routes — M2
+app.use('/api/jobs', jobRoutes);         // /api/jobs
+
+// Health check
+app.get('/', (req, res) => res.send('SkillBridge API running ✅'));
+>>>>>>> Stashed changes
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

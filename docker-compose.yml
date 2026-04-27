@@ -24,6 +24,8 @@ services:
     volumes:
       - ./server:/app/server
       - ./shared:/app/shared
+      - ./seed:/app/seed
+      - /app/node_modules
 
   client:
     build: ./client
@@ -31,6 +33,9 @@ services:
       - "5173:5173"
     depends_on:
       - server
+    volumes:
+      - ./client:/app
+      - /app/node_modules
 
 volumes:
   mongo_data:
