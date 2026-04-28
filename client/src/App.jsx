@@ -8,6 +8,7 @@ const Home             = lazy(() => import('./pages/Home'));
 const StudentRegister  = lazy(() => import('./pages/StudentRegister'));
 const StudentLogin     = lazy(() => import('./pages/StudentLogin'));
 const StudentProfile   = lazy(() => import('./pages/StudentProfile'));
+const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
 const JobList          = lazy(() => import('./pages/JobList'));
 const AdminImport      = lazy(() => import('./pages/AdminImport'));
 const EmployerRegister = lazy(() => import('./pages/EmployerRegister'));
@@ -27,12 +28,13 @@ const App = () => {
   return (
     <BrowserRouter>
       <Navbar />
-      <Suspense fallback={
-        <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy"></div>
-        </div>
-      }>
-        <Routes>
+      <div className="pt-20 bg-brand-mint min-h-screen"> {/* Fixed Navbar Offset + Mint Background */}
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue"></div>
+          </div>
+        }>
+          <Routes>
           {/* Default redirect to landing page */}
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Home />} />
@@ -40,6 +42,14 @@ const App = () => {
           {/* Student routes */}
           <Route path="/student/register" element={<StudentRegister />} />
           <Route path="/student/login"    element={<StudentLogin />} />
+          <Route 
+            path="/student/dashboard"  
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentDashboard />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="/student/profile"  
             element={
@@ -77,6 +87,7 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      </div>
     </BrowserRouter>
   );
 };

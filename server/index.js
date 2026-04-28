@@ -7,10 +7,10 @@ connectDB();
 
 const app = express();
 
-app.use((req, res, next) => {
-  console.log(`[DEBUG] ${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers)}`);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`[DEBUG] ${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers)}`);
+//   next();
+// });
 
 app.use(cors());
 app.use(express.json());

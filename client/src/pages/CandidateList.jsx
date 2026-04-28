@@ -215,7 +215,7 @@ const CandidateList = () => {
         <div className="space-y-4">
           {!loading && candidates.map((candidate, index) => (
             <Card key={candidate._id} className="p-5 md:p-6 hover:shadow-md transition-shadow">
-              
+
               {/* Rank + Name row */}
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-10 h-10 rounded-full bg-brand-light text-brand-blue flex items-center justify-center font-bold flex-shrink-0">
@@ -252,8 +252,8 @@ const CandidateList = () => {
                   <div className="flex gap-1.5 flex-wrap">
                     {candidate.certifications && candidate.certifications.length > 0
                       ? candidate.certifications.map((cert) => (
-                          <Badge key={cert} variant="orange">{cert}</Badge>
-                        ))
+                        <Badge key={cert} variant="orange">{cert}</Badge>
+                      ))
                       : <Badge variant="gray">None</Badge>
                     }
                   </div>

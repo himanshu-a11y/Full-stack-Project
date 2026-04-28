@@ -11,9 +11,10 @@ export default {
       },
       colors: {
         brand: {
-          navy:  '#1F3864',
-          blue:  '#2563EB',
+          navy: '#1F3864',
+          blue: '#2563EB',
           light: '#EBF8FF',
+          mint: '#ECFDF5', // Slightly more visible Emerald-50
         },
       },
       boxShadow: {

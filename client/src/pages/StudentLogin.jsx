@@ -35,7 +35,7 @@ const StudentLogin = () => {
       localStorage.setItem('skillbridge_token', res.data.token);
       localStorage.setItem('skillbridge_role', 'student');
       window.dispatchEvent(new Event('auth-change'));
-      navigate('/student/profile');
+      navigate('/student/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials. Please try again. Note: Backend auth routes might be disabled.');
     } finally {

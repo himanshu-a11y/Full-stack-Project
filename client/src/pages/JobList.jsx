@@ -1,10 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
 import Sidebar from '../components/ui/Sidebar';
 import Footer from '../components/Footer';
 
@@ -13,52 +11,50 @@ const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'M
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-
-  const observer = useRef();
-
   const [filters, setFilters] = useState({
     trade: '',
     district: '',
   });
 
-  const lastJobElementRef = useCallback(node => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
+  const navigate = useNavigate();
 
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
+  const fetchJobs = useCallback(async (pageNum) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/jobs?page=${pageNum}&limit=10`);
+      const newJobs = res.data.jobs || [];
+
+      setJobs(prevJobs => pageNum === 1 ? newJobs : [...prevJobs, ...newJobs]);
+      setHasMore(newJobs.length === 10);
+    } catch (err) {
+      console.error('Failed to fetch jobs', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // CRITICAL: wrap the scroll handler in useCallback with dependency array [page, hasMore, loading]
+  // The reason for useCallback: without it, a new function reference is created on every render,
+  // causing the event listener to be added and removed on every render — a performance bug.
+  const handleScroll = useCallback(() => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+      if (!loading && hasMore) {
         setPage(prevPage => prevPage + 1);
       }
-    });
-    if (node) observer.current.observe(node);
+    }
   }, [loading, hasMore]);
 
   useEffect(() => {
-    // Reset page and jobs when filters change (if handled by API in future). 
-    // Right now, it's just client-side, but it's good practice.
-  }, [filters]);
+    fetchJobs(page);
+  }, [page, fetchJobs]);
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`/api/jobs?page=${page}&limit=10`);
-        setJobs(prevJobs => {
-          if (page === 1) return res.data.jobs || [];
-          return [...prevJobs, ...(res.data.jobs || [])];
-        });
-        setHasMore(res.data.jobs && res.data.jobs.length > 0);
-      } catch (err) {
-        console.error('Failed to fetch jobs', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchJobs();
-  }, [page]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   const filteredJobs = jobs.filter(job => {
     if (filters.trade && job.trade !== filters.trade) return false;
@@ -68,16 +64,25 @@ const JobList = () => {
 
   return (
     <>
-      <div className="flex">
+      <div className="flex bg-brand-mint min-h-screen">
         <Sidebar
-          title="MENU"
+          title="NAVIGATION"
           links={[
             {
               label: 'Home',
-              to: '/',
+              to: '/home',
               icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9m-9 11v-5m0 0V9m0 5h.01M9 15h6" />
+                </svg>
+              )
+            },
+            {
+              label: 'Dashboard',
+              to: '/student/dashboard',
+              icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
               )
             },
@@ -102,7 +107,7 @@ const JobList = () => {
           ]}
         />
         <div className="flex-1 flex flex-col">
-          <div className="bg-slate-50 min-h-[calc(100vh-64px)] py-10">
+          <div className="bg-brand-mint min-h-[calc(100vh-80px)] py-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-brand-navy mb-2">Find the right job</h1>
@@ -137,70 +142,67 @@ const JobList = () => {
                           {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
                       </div>
-                      <Button
-                        variant="outline"
-                        fullWidth
+                      <button
+                        className="mt-2 w-full px-4 py-2 text-sm font-medium text-brand-navy border border-brand-navy rounded-lg hover:bg-brand-navy hover:text-white transition-colors"
                         onClick={() => setFilters({ trade: '', district: '' })}
                         disabled={!filters.trade && !filters.district}
-                        className="mt-2"
                       >
                         Clear Filters
-                      </Button>
+                      </button>
                     </div>
                   </Card>
                 </div>
 
                 {/* Job Listings */}
                 <div className="flex-1 space-y-4">
-                  {loading ? (
-                    <div className="py-20 text-center">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mb-4"></div>
-                      <p className="text-gray-500 font-medium">Loading jobs...</p>
-                    </div>
-                  ) : filteredJobs.length === 0 ? (
+                  {filteredJobs.length === 0 && !loading ? (
                     <Card className="p-12 text-center border-dashed">
                       <p className="text-gray-500 text-lg">No jobs found matching your criteria.</p>
-                      <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={() => setFilters({ trade: '', district: '' })}
-                      >
-                        View all jobs
-                      </Button>
                     </Card>
                   ) : (
-                    filteredJobs.map((job, index) => {
-                      const isLast = filteredJobs.length === index + 1;
-                      return (
-                        <Card
-                          ref={isLast ? lastJobElementRef : null}
-                          key={job._id}
-                          className="p-6 hover:shadow-card-hover transition-all duration-200"
-                        >
-                          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <h2 className="text-xl font-bold text-gray-900 mb-2">{job.title}</h2>
-                              <p className="text-gray-600 text-sm mb-4 line-clamp-2">{job.description}</p>
-
-                              <div className="flex flex-wrap gap-2">
-                                <Badge variant="blue"><span className="font-semibold text-gray-500 mr-1">Trade:</span> {job.trade}</Badge>
-                                <Badge variant="green"><span className="font-semibold text-gray-500 mr-1">Loc:</span> {job.district}</Badge>
-                                {job.certRequired?.map(cert => (
-                                  <Badge key={cert} variant="orange">{cert}</Badge>
-                                ))}
-                              </div>
+                    filteredJobs.map((job) => (
+                      <Card
+                        key={job._id}
+                        className="p-6 hover:shadow-card-hover transition-all duration-200 cursor-pointer group"
+                        onClick={() => navigate(`/jobs/${job._id}`)}
+                      >
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h2 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-brand-blue transition-colors">{job.title}</h2>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <Badge variant="blue">{job.trade}</Badge>
+                              <Badge variant="green" className="flex items-center gap-1.5 px-3">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                {job.district}
+                              </Badge>
+                              {job.certificationsRequired?.map(cert => (
+                                <Badge key={cert} variant="orange">{cert}</Badge>
+                              ))}
                             </div>
-                            <div className="shrink-0 flex items-end md:items-center">
-                              <Button onClick={() => alert("Application feature goes here!")}>Apply Now</Button>
-                            </div>
+                            <p className="text-gray-600 text-sm line-clamp-2">{job.description}</p>
                           </div>
-                        </Card>
-                      )
-                    })
+                          <div className="shrink-0 pt-1">
+                            <button className="px-6 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-black hover:-translate-y-0.5 transition-all shadow-md shadow-slate-200">
+                              Apply
+                            </button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
                   )}
-                  {loading && jobs.length > 0 && (
-                    <div className="py-4 text-center">
-                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-brand-navy"></div>
+
+                  {loading && (
+                    <div className="py-8 text-center">
+                      <p className="text-gray-500 font-medium animate-pulse">Loading...</p>
+                    </div>
+                  )}
+
+                  {!hasMore && jobs.length > 0 && (
+                    <div className="py-8 text-center">
+                      <p className="text-gray-400">No more jobs</p>
                     </div>
                   )}
                 </div>

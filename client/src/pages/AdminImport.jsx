@@ -22,6 +22,23 @@ const AdminImport = () => {
     }
   };
 
+  const downloadSampleCSV = () => {
+    const headers = 'name,email,phone,trade,district,certifications,status\n';
+    const row1 = 'John Doe,john@example.com,9876543210,Electrician,Ahmedabad,"NTC, NAC",Active\n';
+    const row2 = 'Jane Smith,jane@example.com,9876543211,Fitter,Surat,NTC,Active\n';
+    const csvContent = headers + row1 + row2;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_students.csv';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
   const handleImport = async () => {
     if (!file) return;
 
@@ -41,6 +58,9 @@ const AdminImport = () => {
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       setError(err.response?.data?.message || 'Import failed. Ensure your CSV format is correct.');
+      if (err.response?.data?.errors) {
+        setResult({ errors: err.response.data.errors, inserted: 0, updated: 0 });
+      }
     } finally {
       setLoading(false);
     }
@@ -48,26 +68,24 @@ const AdminImport = () => {
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-slate-50 py-12 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-brand-navy mb-8">Admin Dashboard</h1>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-extrabold text-brand-navy">Admin Dashboard</h1>
+          <Button variant="outline" onClick={downloadSampleCSV}>
+            Download Sample CSV
+          </Button>
+        </div>
 
-        <Card className="p-8 border-t-4 border-t-brand-blue">
+        <Card className="p-8 border-t-4 border-t-brand-blue mb-8">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-2">Bulk Import Students</h2>
             <p className="text-gray-600 text-sm">Upload a CSV file containing student records to populate the database.</p>
+            <p className="text-xs text-brand-blue mt-2 font-medium">
+              Note: CSV must include headers: name, email, phone, trade, district, certifications, status
+            </p>
           </div>
 
           {error && <Alert variant="error" className="mb-6">{error}</Alert>}
-          {result && (
-            <Alert variant="success" className="mb-6">
-              Import Successful! Inserted: {result.inserted}, Updated: {result.updated}
-              {result.errors.length > 0 && (
-                <div className="mt-2 text-xs">
-                  Errors: {result.errors.length} (Check console for details)
-                </div>
-              )}
-            </Alert>
-          )}
 
           <div 
             onClick={() => fileInputRef.current?.click()}
@@ -95,10 +113,49 @@ const AdminImport = () => {
               disabled={!file || loading}
               loading={loading}
             >
-              Import Data
+              Upload & Import
             </Button>
           </div>
         </Card>
+
+        {result && (
+          <Card className="p-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Import Results</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-3 px-4 font-semibold text-sm text-gray-600">Inserted</th>
+                    <th className="py-3 px-4 font-semibold text-sm text-gray-600">Updated</th>
+                    <th className="py-3 px-4 font-semibold text-sm text-gray-600">Errors</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4 text-green-600 font-bold">{result.inserted || 0}</td>
+                    <td className="py-4 px-4 text-blue-600 font-bold">{result.updated || 0}</td>
+                    <td className="py-4 px-4 text-red-600 font-bold">{result.errors?.length || 0}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {result.errors && result.errors.length > 0 && (
+              <div className="mt-8">
+                <h4 className="text-sm font-bold text-red-600 mb-2">Error Details:</h4>
+                <div className="bg-red-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+                  <ul className="space-y-2">
+                    {result.errors.map((err, idx) => (
+                      <li key={idx} className="text-xs text-red-800">
+                        <span className="font-bold">Row {err.row || idx + 1}:</span> {err.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
       </div>
     </div>
   );
