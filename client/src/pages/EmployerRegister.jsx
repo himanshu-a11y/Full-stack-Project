@@ -45,72 +45,72 @@ const EmployerRegister = () => {
   return (
     <>
       <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 shadow-card-hover md:my-10">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Employer Registration</h2>
-          <p className="text-gray-600 text-sm">Post jobs and find skilled ITI candidates</p>
-        </div>
-
-        {error && <Alert variant="error" className="mb-6">{error}</Alert>}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Company Name"
-            type="text"
-            name="companyName"
-            placeholder="e.g. Tata Motors Ltd"
-            value={formData.companyName}
-            onChange={handleChange}
-            required
-          />
-
-          <Input
-            label="Email"
-            type="email"
-            name="email"
-            placeholder="hr@company.com"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-
-          <Input
-            label="Password"
-            type="password"
-            name="password"
-            placeholder="Minimum 6 characters"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
-          <Input
-            label="City"
-            type="text"
-            name="city"
-            placeholder="e.g. Ahmedabad"
-            value={formData.city}
-            onChange={handleChange}
-            required
-          />
-
-          <div className="pt-3">
-            <Button type="submit" loading={loading} fullWidth>
-              {loading ? 'Registering...' : 'Register as Employer'}
-            </Button>
+        <Card className="w-full max-w-md p-8 shadow-card-hover md:my-10">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Employer Registration</h2>
+            <p className="text-gray-600 text-sm">Post jobs and find skilled ITI candidates</p>
           </div>
-        </form>
 
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link to="/employer/login" className="text-brand-blue font-medium hover:underline">Login here</Link>
-          </p>
-        </div>
-      </Card>
-    </div>
-    <Footer />
-  </>
+          {error && <Alert variant="error" className="mb-6">{error}</Alert>}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label="Company Name"
+              type="text"
+              name="companyName"
+              placeholder="e.g. Tata Motors Ltd"
+              value={formData.companyName}
+              onChange={handleChange}
+              required
+            />
+
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              placeholder="hr@company.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              placeholder="Minimum 6 characters"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+
+            <Input
+              label="City"
+              type="text"
+              name="city"
+              placeholder="e.g. Ahmedabad"
+              value={formData.city}
+              onChange={handleChange}
+              required
+            />
+
+            <div className="pt-3">
+              <Button type="submit" loading={loading} fullWidth>
+                {loading ? 'Registering...' : 'Register as Employer'}
+              </Button>
+            </div>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link to="/employer/login" className="text-brand-blue font-medium hover:underline">Login here</Link>
+            </p>
+          </div>
+        </Card>
+      </div>
+      <Footer />
+    </>
   );
 };
 

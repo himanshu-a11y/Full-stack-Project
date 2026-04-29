@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from '../api/axios';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
 import Footer from '../components/Footer';
 
@@ -37,7 +37,7 @@ const EmployerLogin = () => {
       window.dispatchEvent(new Event('auth-change'));
       navigate('/employer/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+      setError(err.response?.data?.message || 'Invalid credentials. Please check your email and password.');
     } finally {
       setLoading(false);
     }
@@ -46,57 +46,57 @@ const EmployerLogin = () => {
   return (
     <>
       <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 shadow-card-hover md:my-10">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Employer Login</h2>
-          <p className="text-gray-600 text-sm">Access your dashboard and manage job postings</p>
-        </div>
-
-        {error && <Alert variant="error" className="mb-6">{error}</Alert>}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <Input
-            label="Email"
-            type="email"
-            name="email"
-            placeholder="hr@company.com"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-
-          <Input
-            label="Password"
-            type="password"
-            name="password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
-          <div className="pt-2">
-            <Button type="submit" loading={loading} fullWidth>
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
+        <Card className="w-full max-w-md p-8 shadow-card-hover md:my-10 border-t-4 border-t-brand-blue">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Employer Login</h2>
+            <p className="text-gray-600 text-sm">Post jobs and find top ITI talent for your organization.</p>
           </div>
-        </form>
 
-        <div className="mt-8 text-center space-y-3">
-          <p className="text-sm text-gray-600">
-            New employer?{' '}
-            <Link to="/employer/register" className="text-brand-blue font-medium hover:underline">Register here</Link>
-          </p>
-          <div className="h-px bg-gray-200 w-full my-4"></div>
-          <p className="text-sm text-gray-600">
-            Are you a student?{' '}
-            <Link to="/student/login" className="text-brand-blue font-medium hover:underline">Student login</Link>
-          </p>
-        </div>
-      </Card>
-    </div>
-    <Footer />
-  </>
+          {error && <Alert variant="error" className="mb-6">{error}</Alert>}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Input
+              label="Work Email"
+              type="email"
+              name="email"
+              placeholder="hr@company.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+
+            <div className="pt-2">
+              <Button type="submit" loading={loading} fullWidth className="py-3">
+                {loading ? 'Logging in...' : 'Login as Employer'}
+              </Button>
+            </div>
+          </form>
+
+          <div className="mt-8 text-center space-y-3">
+            <p className="text-sm text-gray-600">
+              Don't have an employer account?{' '}
+              <Link to="/employer/register" className="text-brand-blue font-medium hover:underline">Register here</Link>
+            </p>
+          </div>
+        </Card>
+      </div>
+      <Footer />
+    </>
   );
 };
 

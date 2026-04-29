@@ -43,7 +43,7 @@ const Navbar = () => {
 
   const NavItems = () => (
     <>
-      {(!token || role !== 'student') && (
+      {token && !isDashboardArea && role !== 'employer' && (
         <NavLink to="/jobs" className={navLinkClasses}>
           {({ isActive }) => (
             <>
@@ -59,7 +59,7 @@ const Navbar = () => {
           <NavLink to="/student/login" className={navLinkClasses}>
             {({ isActive }) => (
               <>
-                For Students
+                Student
                 <span className={`absolute bottom-0 left-4 right-4 h-0.5 bg-brand-blue rounded-full transform transition-transform duration-300 ${isActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
               </>
             )}
@@ -67,7 +67,15 @@ const Navbar = () => {
           <NavLink to="/employer/login" className={navLinkClasses}>
             {({ isActive }) => (
               <>
-                Employers
+                Employer
+                <span className={`absolute bottom-0 left-4 right-4 h-0.5 bg-brand-blue rounded-full transform transition-transform duration-300 ${isActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
+              </>
+            )}
+          </NavLink>
+          <NavLink to="/admin/login" className={navLinkClasses}>
+            {({ isActive }) => (
+              <>
+                Admin
                 <span className={`absolute bottom-0 left-4 right-4 h-0.5 bg-brand-blue rounded-full transform transition-transform duration-300 ${isActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
               </>
             )}
@@ -109,6 +117,25 @@ const Navbar = () => {
             {({ isActive }) => (
               <>
                 Dashboard
+                <span className={`absolute bottom-0 left-4 right-4 h-0.5 bg-brand-blue rounded-full transform transition-transform duration-300 ${isActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
+              </>
+            )}
+          </NavLink>
+          <button
+            onClick={handleLogout}
+            className="ml-4 text-[10px] font-black uppercase tracking-[0.15em] text-rose-500 hover:text-rose-600 transition-colors bg-rose-50 px-4 py-2 rounded-full border border-rose-100"
+          >
+            Sign Out
+          </button>
+        </>
+      )}
+
+      {token && role === 'admin' && (
+        <>
+          <NavLink to="/admin/dashboard" className={navLinkClasses}>
+            {({ isActive }) => (
+              <>
+                Admin Dash
                 <span className={`absolute bottom-0 left-4 right-4 h-0.5 bg-brand-blue rounded-full transform transition-transform duration-300 ${isActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
               </>
             )}

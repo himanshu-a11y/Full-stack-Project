@@ -4,17 +4,20 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy imports — all pages load only when needed
-const Home             = lazy(() => import('./pages/Home'));
-const StudentRegister  = lazy(() => import('./pages/StudentRegister'));
-const StudentLogin     = lazy(() => import('./pages/StudentLogin'));
-const StudentProfile   = lazy(() => import('./pages/StudentProfile'));
+const Home = lazy(() => import('./pages/Home'));
+const StudentRegister = lazy(() => import('./pages/StudentRegister'));
+const StudentLogin = lazy(() => import('./pages/StudentLogin'));
+const StudentProfile = lazy(() => import('./pages/StudentProfile'));
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
-const JobList          = lazy(() => import('./pages/JobList'));
-const AdminImport      = lazy(() => import('./pages/AdminImport'));
+const JobList = lazy(() => import('./pages/JobList'));
+const AdminImport = lazy(() => import('./pages/AdminImport'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const EmployerRegister = lazy(() => import('./pages/EmployerRegister'));
-const EmployerLogin    = lazy(() => import('./pages/EmployerLogin'));
-const PostJob          = lazy(() => import('./pages/PostJob'));
-const CandidateList    = lazy(() => import('./pages/CandidateList'));
+const EmployerLogin = lazy(() => import('./pages/EmployerLogin'));
+const PostJob = lazy(() => import('./pages/PostJob'));
+const CandidateList = lazy(() => import('./pages/CandidateList'));
+const EmployerDashboard = lazy(() => import('./pages/EmployerDashboard'));
 
 // Simple 404 page
 const NotFound = () => (
@@ -35,58 +38,82 @@ const App = () => {
           </div>
         }>
           <Routes>
-          {/* Default redirect to landing page */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<Home />} />
+            {/* Default redirect to landing page */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<Home />} />
 
-          {/* Student routes */}
-          <Route path="/student/register" element={<StudentRegister />} />
-          <Route path="/student/login"    element={<StudentLogin />} />
-          <Route 
-            path="/student/dashboard"  
-            element={
-              <ProtectedRoute requiredRole="student">
-                <StudentDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/profile"  
-            element={
-              <ProtectedRoute requiredRole="student">
-                <StudentProfile />
-              </ProtectedRoute>
-            } 
-          />
+            {/* Student routes */}
+            <Route path="/student/register" element={<StudentRegister />} />
+            <Route path="/student/login" element={<StudentLogin />} />
+            <Route
+              path="/student/dashboard"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/profile"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentProfile />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Employer routes */}
-          <Route path="/employer/register" element={<EmployerRegister />} />
-          <Route path="/employer/login" element={<EmployerLogin />} />
-          <Route 
-            path="/employer/dashboard" 
-            element={
-              <ProtectedRoute requiredRole="employer">
-                <PostJob />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/employer/jobs/:id/candidates" 
-            element={
-              <ProtectedRoute requiredRole="employer">
-                <CandidateList />
-              </ProtectedRoute>
-            } 
-          />
+            {/* Employer routes */}
+            <Route path="/employer/register" element={<EmployerRegister />} />
+            <Route path="/employer/login" element={<EmployerLogin />} />
+            <Route
+              path="/employer/dashboard"
+              element={
+                <ProtectedRoute requiredRole="employer">
+                  <EmployerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employer/post-job"
+              element={
+                <ProtectedRoute requiredRole="employer">
+                  <PostJob />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employer/jobs/:id/candidates"
+              element={
+                <ProtectedRoute requiredRole="employer">
+                  <CandidateList />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Public & Admin routes */}
-          <Route path="/jobs" element={<JobList />} />
-          <Route path="/admin/import" element={<AdminImport />} />
+            {/* Public & Admin routes */}
+            <Route path="/jobs" element={<ProtectedRoute><JobList /></ProtectedRoute>} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/import"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminImport />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </div>
     </BrowserRouter>
   );

@@ -72,10 +72,28 @@ const PostJob = () => {
   const sidebarLinks = [
     {
       label: 'Post New Job',
-      to: '/employer/dashboard',
+      to: '/employer/post-job',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Dashboard',
+      to: '/employer/dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Browse Jobs',
+      to: '/jobs',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       ),
     },
@@ -84,20 +102,21 @@ const PostJob = () => {
   return (
     <div className="flex bg-slate-50 min-h-[calc(100vh-64px)]">
       <div className="hidden md:block">
-        <Sidebar links={sidebarLinks} title="Employer Panel" />
+        <Sidebar links={sidebarLinks} title="NAVIGATION" />
       </div>
 
       <div className="flex-1 p-6 md:p-10 max-w-5xl mx-auto overflow-y-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Employer Profile</h1>
-          <p className="text-gray-600">Manage your job listings and find the best candidates.</p>
+        <div className="mb-10 bg-gradient-to-r from-brand-navy to-brand-blue p-8 rounded-3xl text-white shadow-xl shadow-brand-blue/10">
+          <h1 className="text-3xl font-black tracking-tight">Post a New Opportunity</h1>
+          <p className="text-blue-100 mt-2 font-medium opacity-90">Find the perfect ITI candidate for your organization today.</p>
         </div>
 
         {/* Post Job Form */}
-        <Card className="p-6 md:p-8 mb-10">
-          <div className="border-b border-gray-100 pb-4 mb-6">
-            <h2 className="text-xl font-semibold text-brand-navy">Post a New Job</h2>
-            <p className="text-sm text-gray-500 mt-1">Fill out the requirements to find the right ITI candidate.</p>
+        <Card className="p-8 md:p-12 mb-10 border-t-0 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-blue to-emerald-400"></div>
+          <div className="mb-10">
+            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Job Specifications</h2>
+            <p className="text-sm text-slate-400 font-bold mt-1 uppercase tracking-widest">Step 1: Define requirements</p>
           </div>
 
           {error && <Alert variant="error" className="mb-6">{error}</Alert>}
@@ -187,9 +206,10 @@ const PostJob = () => {
         </Card>
 
         {/* My Posted Jobs Table */}
-        <Card className="p-6 md:p-8">
-          <div className="border-b border-gray-100 pb-4 mb-6">
-            <h3 className="text-xl font-semibold text-brand-navy">My Posted Jobs</h3>
+        <Card className="p-8 md:p-10 border-none shadow-soft">
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Active Listings</h3>
+            <span className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{myJobs.length} Live</span>
           </div>
 
           {jobsLoading ? (

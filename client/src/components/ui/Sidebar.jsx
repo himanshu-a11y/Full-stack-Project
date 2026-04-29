@@ -13,6 +13,7 @@ const Sidebar = ({ links = [], title = '', footer = null }) => {
           <NavLink
             key={to}
             to={to}
+            end
             className={({ isActive }) =>
               `group relative flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-400 ease-out
               ${isActive

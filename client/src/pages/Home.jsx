@@ -9,25 +9,25 @@ const Home = () => {
       {/* Hero Section - Refined Light Version */}
       <section className="relative pt-32 pb-24 px-6 lg:px-12 overflow-hidden bg-white">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-40">
-           <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-blue/10 rounded-full blur-[100px] animate-pulse"></div>
-           <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-brand-accent/5 rounded-full blur-[100px] animate-pulse delay-700"></div>
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-blue/10 rounded-full blur-[100px] animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-brand-accent/5 rounded-full blur-[100px] animate-pulse delay-700"></div>
         </div>
-        
+
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 border border-brand-blue/10 mb-8">
-             <span className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span>
-             <span className="text-[10px] font-bold text-brand-blue uppercase tracking-[0.2em]">Bridge the gap between skills and jobs</span>
+            <span className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span>
+            <span className="text-[10px] font-bold text-brand-blue uppercase tracking-[0.2em]">Bridge the gap between skills and jobs</span>
           </div>
-          
+
           <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight">
-            The Smartest Way to <span className="text-brand-blue">Empower</span> <br/>
+            The Smartest Way to <span className="text-brand-blue">Empower</span> <br />
             Your Skilled <span className="text-brand-blue italic">Career</span>
           </h1>
-          
+
           <p className="text-lg md:text-xl text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
             SkillBridge is a professional platform dedicated to connecting ITI students with quality employers across Gujarat through verified data and intelligent matching.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link to="/student/register" className="w-full sm:w-auto">
               <Button fullWidth className="text-sm font-bold uppercase tracking-widest bg-brand-blue py-4 px-10 rounded-xl shadow-lg shadow-brand-blue/20 hover:shadow-xl hover:-translate-y-0.5 transition-all">I am a Student</Button>
