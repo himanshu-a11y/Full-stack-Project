@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -18,6 +18,8 @@ const EmployerLogin = lazy(() => import('./pages/EmployerLogin'));
 const PostJob = lazy(() => import('./pages/PostJob'));
 const CandidateList = lazy(() => import('./pages/CandidateList'));
 const EmployerDashboard = lazy(() => import('./pages/EmployerDashboard'));
+const JobDetails = lazy(() => import('./pages/JobDetails'));
+const ApplicationSuccess = lazy(() => import('./pages/ApplicationSuccess'));
 
 // Simple 404 page
 const NotFound = () => (
@@ -28,10 +30,24 @@ const NotFound = () => (
 );
 
 const App = () => {
+  const [token, setToken] = import.meta.env.SSR ? [null] : useState(localStorage.getItem('skillbridge_token'));
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setToken(localStorage.getItem('skillbridge_token'));
+    };
+    window.addEventListener('auth-change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
-      <Navbar />
-      <div className="pt-20 bg-brand-mint min-h-screen"> {/* Fixed Navbar Offset + Mint Background */}
+      {!token && <Navbar />}
+      <div className={`${!token ? 'pt-20' : ''} bg-[#F8FAFC] min-h-screen`}>
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue"></div>
@@ -92,6 +108,8 @@ const App = () => {
 
             {/* Public & Admin routes */}
             <Route path="/jobs" element={<ProtectedRoute><JobList /></ProtectedRoute>} />
+            <Route path="/jobs/:id" element={<ProtectedRoute requiredRole="student"><JobDetails /></ProtectedRoute>} />
+            <Route path="/application-success" element={<ProtectedRoute requiredRole="student"><ApplicationSuccess /></ProtectedRoute>} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/admin/dashboard"

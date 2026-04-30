@@ -3,6 +3,7 @@ import axios from '../api/axios';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
+import Sidebar from '../components/ui/Sidebar';
 
 const AdminImport = () => {
   const [file, setFile] = useState(null);
@@ -10,6 +11,27 @@ const AdminImport = () => {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+
+  const sidebarLinks = [
+    {
+      label: 'Admin Home',
+      to: '/admin/dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Bulk Import',
+      to: '/admin/import',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+      ),
+    },
+  ];
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -67,29 +89,41 @@ const AdminImport = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-50 py-12 px-4 sm:px-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-extrabold text-brand-navy">Admin Dashboard</h1>
-          <Button variant="outline" onClick={downloadSampleCSV}>
+    <div className="flex bg-[#F8FAFC] h-screen overflow-hidden font-sans">
+      <div className="hidden lg:block h-full shrink-0">
+        <Sidebar 
+          links={sidebarLinks} 
+          title="ADMIN PORTAL" 
+          roleBadge={{ type: 'admin', label: 'Admin Panel' }}
+        />
+      </div>
+
+      <div className="flex-1 overflow-y-auto h-screen p-6 lg:p-12 max-w-5xl mx-auto w-full scrollbar-hide">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Bulk <span className="text-brand-blue">Data Import</span></h1>
+            <p className="text-slate-500 mt-2 font-medium">Populate student records using standardized CSV batches.</p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={downloadSampleCSV}
+            className="rounded-2xl border-slate-200 text-slate-600 font-bold hover:bg-slate-50"
+          >
             Download Sample CSV
           </Button>
-        </div>
+        </header>
 
-        <Card className="p-8 border-t-4 border-t-brand-blue mb-8">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Bulk Import Students</h2>
-            <p className="text-gray-600 text-sm">Upload a CSV file containing student records to populate the database.</p>
-            <p className="text-xs text-brand-blue mt-2 font-medium">
-              Note: CSV must include headers: name, email, phone, trade, district, certifications, status
-            </p>
+        <Card className="p-10 border-none bg-white shadow-xl shadow-slate-200/50 rounded-[3rem] mb-10">
+          <div className="mb-10">
+            <h2 className="text-xl font-black text-slate-900 mb-2 uppercase tracking-tight">Upload Manifest</h2>
+            <p className="text-slate-500 text-sm font-medium">Select a correctly formatted .csv file to begin processing.</p>
           </div>
 
-          {error && <Alert variant="error" className="mb-6">{error}</Alert>}
+          {error && <Alert variant="error" className="mb-8 rounded-[2rem] font-bold">{error}</Alert>}
 
           <div 
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer mb-6"
+            className="group border-2 border-dashed border-slate-200 rounded-[2.5rem] p-16 text-center bg-slate-50/50 hover:bg-white hover:border-brand-blue transition-all cursor-pointer mb-10 relative overflow-hidden"
           >
             <input 
               type="file" 
@@ -98,13 +132,17 @@ const AdminImport = () => {
               ref={fileInputRef}
               onChange={handleFileChange}
             />
-            <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <p className="text-sm text-gray-600 font-medium mb-1">
-              {file ? file.name : 'Click to upload or drag and drop'}
-            </p>
-            <p className="text-xs text-gray-500">CSV files only (Max 5MB)</p>
+            <div className="relative z-10">
+              <div className="w-20 h-20 bg-white rounded-3xl shadow-lg flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500">
+                <svg className="h-10 w-10 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <p className="text-lg font-black text-slate-900 mb-2">
+                {file ? file.name : 'Drop your CSV here'}
+              </p>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">Limit: 5MB • Standardized Schema Only</p>
+            </div>
           </div>
 
           <div className="flex justify-end">
@@ -112,45 +150,52 @@ const AdminImport = () => {
               onClick={handleImport} 
               disabled={!file || loading}
               loading={loading}
+              className="h-14 px-10 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20 hover:bg-black transition-all"
             >
-              Upload & Import
+              Initialize Import Pipeline
             </Button>
           </div>
         </Card>
 
         {result && (
-          <Card className="p-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Import Results</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="py-3 px-4 font-semibold text-sm text-gray-600">Inserted</th>
-                    <th className="py-3 px-4 font-semibold text-sm text-gray-600">Updated</th>
-                    <th className="py-3 px-4 font-semibold text-sm text-gray-600">Errors</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4 text-green-600 font-bold">{result.inserted || 0}</td>
-                    <td className="py-4 px-4 text-blue-600 font-bold">{result.updated || 0}</td>
-                    <td className="py-4 px-4 text-red-600 font-bold">{result.errors?.length || 0}</td>
-                  </tr>
-                </tbody>
-              </table>
+          <Card className="p-10 border-none bg-slate-900 text-white shadow-2xl shadow-slate-900/30 rounded-[3rem] animate-in fade-in slide-in-from-bottom-4">
+            <div className="flex items-center justify-between mb-10">
+              <h3 className="text-2xl font-black tracking-tight">Process Report</h3>
+              <div className="flex gap-2">
+                <div className="px-4 py-2 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Success</p>
+                  <p className="text-lg font-black">{result.inserted + result.updated}</p>
+                </div>
+                <div className="px-4 py-2 bg-rose-500/20 rounded-xl border border-rose-500/30">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-rose-400">Failures</p>
+                  <p className="text-lg font-black">{result.errors?.length || 0}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 mb-10">
+              <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">New Students</p>
+                <p className="text-3xl font-black text-emerald-400">+{result.inserted || 0}</p>
+              </div>
+              <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Records Updated</p>
+                <p className="text-3xl font-black text-brand-blue">{result.updated || 0}</p>
+              </div>
             </div>
 
             {result.errors && result.errors.length > 0 && (
-              <div className="mt-8">
-                <h4 className="text-sm font-bold text-red-600 mb-2">Error Details:</h4>
-                <div className="bg-red-50 rounded-lg p-4 max-h-60 overflow-y-auto">
-                  <ul className="space-y-2">
-                    {result.errors.map((err, idx) => (
-                      <li key={idx} className="text-xs text-red-800">
-                        <span className="font-bold">Row {err.row || idx + 1}:</span> {err.message}
-                      </li>
-                    ))}
-                  </ul>
+              <div className="pt-8 border-t border-white/10">
+                <h4 className="text-sm font-black text-rose-400 uppercase tracking-widest mb-4">Error Log</h4>
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-4 scrollbar-hide">
+                  {result.errors.map((err, idx) => (
+                    <div key={idx} className="p-4 bg-rose-500/10 rounded-2xl border border-rose-500/20 flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-rose-500/20 flex-shrink-0 flex items-center justify-center text-[10px] font-black text-rose-400">!</div>
+                      <p className="text-xs font-medium text-rose-200">
+                        <span className="font-black text-rose-400 uppercase mr-2 tracking-widest">Row {err.row || idx + 1}:</span> {err.message}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

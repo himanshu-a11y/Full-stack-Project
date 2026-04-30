@@ -2,38 +2,44 @@ import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
+
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans overflow-x-hidden">
-      {/* Hero Section - Refined Light Version */}
-      <section className="relative pt-32 pb-24 px-6 lg:px-12 overflow-hidden bg-white">
+      {/* Navbar is now handled globally in App.jsx */}
+      {/* Hero Section - Full Height Centered */}
+      <section className="relative min-h-[calc(100vh-80px)] flex items-center justify-center py-20 px-6 lg:px-12 overflow-hidden bg-white">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-40">
           <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-blue/10 rounded-full blur-[100px] animate-pulse"></div>
           <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-brand-accent/5 rounded-full blur-[100px] animate-pulse delay-700"></div>
         </div>
 
-        <div className="max-w-6xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 border border-brand-blue/10 mb-8">
+        <div className="max-w-6xl mx-auto text-center relative z-10 -mt-10">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 border border-brand-blue/10 mb-10 animate-in fade-in slide-in-from-top duration-700">
             <span className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span>
             <span className="text-[10px] font-bold text-brand-blue uppercase tracking-[0.2em]">Bridge the gap between skills and jobs</span>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight mb-8 leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
             The Smartest Way to <span className="text-brand-blue">Empower</span> <br />
             Your Skilled <span className="text-brand-blue italic">Career</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+          <p className="text-lg md:text-xl text-slate-500 mb-14 max-w-2xl mx-auto leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             SkillBridge is a professional platform dedicated to connecting ITI students with quality employers across Gujarat through verified data and intelligent matching.
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-6">
+          <div className="flex flex-col sm:flex-row justify-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             <Link to="/student/register" className="w-full sm:w-auto">
-              <Button fullWidth className="text-sm font-bold uppercase tracking-widest bg-brand-blue py-4 px-10 rounded-xl shadow-lg shadow-brand-blue/20 hover:shadow-xl hover:-translate-y-0.5 transition-all">I am a Student</Button>
+              <Button fullWidth className="text-[10px] font-black uppercase tracking-[0.2em] bg-brand-navy py-4 px-10 rounded-xl shadow-lg shadow-brand-blue/20 hover:shadow-xl hover:-translate-y-0.5 transition-all">I AM A STUDENT</Button>
             </Link>
             <Link to="/employer/register" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto px-10 py-4 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-bold uppercase tracking-widest hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all">I am an Employer</button>
+              <Button fullWidth className="text-[10px] font-black uppercase tracking-[0.2em] bg-brand-navy py-4 px-10 rounded-xl shadow-lg shadow-brand-blue/20 hover:shadow-xl hover:-translate-y-0.5 transition-all">I AM AN EMPLOYER</Button>
             </Link>
           </div>
         </div>

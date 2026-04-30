@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from '../api/axios';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
@@ -45,54 +45,73 @@ const AdminLogin = () => {
 
   return (
     <>
-      <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 shadow-card-hover md:my-10 border-t-4 border-t-brand-blue">
-          <div className="text-center mb-8">
-             <div className="w-16 h-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      <div className="min-h-screen relative overflow-hidden bg-[#F8FAFC] flex items-center justify-center p-4 py-20">
+        {/* Dynamic Background Elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-slate-900/[0.03] blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-brand-blue/[0.03] blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        </div>
+
+        <div className="w-full max-w-[440px] relative z-10">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-slate-900 text-white mb-6 shadow-2xl shadow-slate-900/20 transition-transform duration-700 hover:rotate-[360deg]">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Admin Login</h2>
-            <p className="text-gray-600 text-sm">Authorized access for system administration.</p>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-3">Admin Access</h1>
+            <p className="text-slate-500 font-medium tracking-wide">Enter secure credentials to manage the portal</p>
           </div>
 
-          {error && <Alert variant="error" className="mb-6">{error}</Alert>}
+          <Card className="p-10 shadow-2xl shadow-slate-200/60 rounded-[3rem] border-none bg-white/80 backdrop-blur-xl">
+            {error && <Alert variant="error" className="mb-8 rounded-2xl font-bold">{error}</Alert>}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <Input
-              label="Admin Email"
-              type="email"
-              name="email"
-              placeholder="admin@skillbridge.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-6">
+                <Input
+                  label="ADMIN EMAIL"
+                  type="email"
+                  name="email"
+                  placeholder="admin@skillbridge.gov"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="bg-slate-50/50 border-slate-100 focus:bg-white transition-all h-14 font-bold"
+                />
+                <Input
+                  label="PASSWORD"
+                  type="password"
+                  name="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="bg-slate-50/50 border-slate-100 focus:bg-white transition-all h-14 font-bold"
+                />
+              </div>
 
-            <Input
-              label="Password"
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-
-            <div className="pt-2">
-              <Button type="submit" loading={loading} fullWidth className="py-3">
-                {loading ? 'Logging in...' : 'Login as Admin'}
+              <Button 
+                type="submit" 
+                loading={loading} 
+                fullWidth 
+                className="h-14 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-slate-900/20 hover:bg-black hover:-translate-y-1 active:translate-y-0 transition-all"
+              >
+                Initialize Session
               </Button>
-            </div>
-          </form>
+            </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-              Secure Administrative Access
-            </p>
-          </div>
-        </Card>
+            <div className="mt-10 pt-8 border-t border-slate-50 text-center">
+              <Link to="/" className="text-xs font-black text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors flex items-center justify-center gap-2 font-bold">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                Return to Public Portal
+              </Link>
+            </div>
+          </Card>
+          
+          <p className="mt-8 text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
+            Secure Infrastructure &copy; 2026 SkillBridge
+          </p>
+        </div>
       </div>
       <Footer />
     </>

@@ -76,23 +76,21 @@ const EmployerDashboard = () => {
   );
 
   return (
-    <div className="flex bg-slate-50 min-h-[calc(100vh-64px)]">
-      <div className="hidden md:block">
-        <Sidebar links={sidebarLinks} title="NAVIGATION" />
+    <div className="flex bg-[#F0FDF4] h-screen overflow-hidden font-sans">
+      <div className="hidden lg:block h-full shrink-0">
+        <Sidebar
+          links={sidebarLinks}
+          title="EMPLOYER NAVIGATION"
+          roleBadge={{ type: 'employer', label: 'Employer Portal' }}
+        />
       </div>
 
-      <div className="flex-1 p-6 md:p-10 max-w-6xl mx-auto overflow-y-auto">
+      <div className="flex-1 overflow-y-auto h-screen p-6 lg:p-12 max-w-7xl mx-auto w-full scrollbar-hide">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Employer Dashboard</h1>
             <p className="text-slate-500 mt-1">Welcome back! Here is what's happening with your job listings.</p>
           </div>
-          <Button onClick={() => navigate('/employer/post-job')} className="shadow-lg shadow-brand-blue/20">
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-              Post a New Job
-            </span>
-          </Button>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -156,7 +154,7 @@ const EmployerDashboard = () => {
                           to={`/employer/jobs/${job._id}/candidates`}
                           className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full font-bold text-xs group-hover:bg-brand-blue group-hover:text-white transition-all"
                         >
-                          View
+                          View Candidates
                         </Link>
                       </td>
                     </tr>

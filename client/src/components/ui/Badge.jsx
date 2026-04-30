@@ -1,15 +1,15 @@
 const variantMap = {
-  blue:   'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800',
-  green:  'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800',
-  orange: 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800',
-  gray:   'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
-  navy:   'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800',
+  blue:   'bg-blue-50/50 text-blue-600 border-blue-100/50 shadow-sm shadow-blue-500/5',
+  green:  'bg-emerald-50/50 text-emerald-600 border-emerald-100/50 shadow-sm shadow-emerald-500/5',
+  orange: 'bg-orange-50/50 text-orange-600 border-orange-100/50 shadow-sm shadow-orange-500/5',
+  gray:   'bg-slate-50 text-slate-500 border-slate-100 shadow-sm shadow-slate-500/5',
+  navy:   'bg-brand-navy/5 text-brand-navy border-brand-navy/10 shadow-sm shadow-brand-navy/5',
 };
 
 const Badge = ({ children, variant = 'gray', className = '' }) => (
   <span
     className={`
-      inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+      inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border
       ${variantMap[variant] || variantMap.gray}
       ${className}
     `}
@@ -19,3 +19,4 @@ const Badge = ({ children, variant = 'gray', className = '' }) => (
 );
 
 export default Badge;
+
