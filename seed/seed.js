@@ -1,4 +1,4 @@
-import { TRADES, DISTRICTS, CERTIFICATIONS } from '../shared/constants.js';
+const { TRADES, DISTRICTS, CERTIFICATIONS } =require('../shared/constants.js');
 
 require('dotenv').config({ path: '../.env' });
 const mongoose = require('mongoose');
