@@ -5,7 +5,10 @@
 @tailwind utilities;
 
 @layer base {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
 
@@ -14,20 +17,36 @@
   }
 
   body {
-    @apply bg-slate-50 text-gray-900 font-sans antialiased;
+    background-color: #ECFDF5;
+    @apply text-gray-900 font-sans antialiased;
   }
 
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     @apply font-sans;
   }
 }
 
 @layer components {
+
   /* Range slider consistent styling */
   input[type="range"] {
     @apply w-full h-1.5 rounded-full appearance-none cursor-pointer bg-blue-100;
   }
+
   input[type="range"]::-webkit-slider-thumb {
     @apply appearance-none w-4 h-4 rounded-full bg-brand-navy cursor-pointer;
   }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
