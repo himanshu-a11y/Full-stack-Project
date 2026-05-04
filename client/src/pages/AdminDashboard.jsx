@@ -15,6 +15,8 @@ const AdminDashboard = () => {
   const [unverifiedStudents, setUnverifiedStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [lastSync, setLastSync] = useState(new Date());
+  const [syncText, setSyncText] = useState('Just now');
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -34,6 +36,8 @@ const AdminDashboard = () => {
           ]
         }));
         setUnverifiedStudents(studentsRes.data.students);
+        setLastSync(new Date());
+        setSyncText('Just now');
       } catch (err) {
         console.error("Failed to fetch admin stats", err);
       } finally {
@@ -42,7 +46,19 @@ const AdminDashboard = () => {
     };
     fetchAdminData();
     const interval = setInterval(fetchAdminData, 30000); // Poll every 30 seconds
-    return () => clearInterval(interval);
+    
+    // Update the "time ago" text every 10 seconds
+    const textInterval = setInterval(() => {
+      const seconds = Math.floor((new Date() - lastSync) / 1000);
+      if (seconds < 60) setSyncText('Just now');
+      else if (seconds < 3600) setSyncText(`${Math.floor(seconds / 60)} mins ago`);
+      else setSyncText('Over 1 hour ago');
+    }, 10000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(textInterval);
+    };
   }, []);
 
   const refreshData = () => {
@@ -154,7 +170,7 @@ const AdminDashboard = () => {
             </div>
             <div className="pr-4">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Last Sync</p>
-              <p className="text-sm font-bold text-slate-900">2 mins ago</p>
+              <p className="text-sm font-bold text-slate-900">{syncText}</p>
             </div>
           </div>
         </div>
