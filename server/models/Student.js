@@ -15,6 +15,8 @@ const studentSchema = new mongoose.Schema({
   availability:   { type: Boolean, default: true },
   status:         { type: String, default: 'active' },
   tradeHistory:   [{ type: String }],
+  profileViews:   { type: Number, default: 0 },
+  isVerified:     { type: Boolean, default: false },
   createdAt:      { type: Date, default: Date.now }
 });
 

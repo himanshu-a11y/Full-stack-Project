@@ -14,6 +14,7 @@ redis.on('error', (err) => {
 });
 
 const KEY_PREFIX = 'match:';
+const JOB_MATCH_PREFIX = 'matchJobs:';
 const TTL_SECONDS = 1800; // 30 minutes
 
 async function getCachedCandidates(jobId) {
@@ -31,6 +32,24 @@ async function setCachedCandidates(jobId, data) {
     await redis.set(KEY_PREFIX + jobId, JSON.stringify(data), 'EX', TTL_SECONDS);
   } catch (err) {
     console.error('setCachedCandidates error:', err);
+  }
+}
+
+async function getCachedJobs(studentId) {
+  try {
+    const data = await redis.get(JOB_MATCH_PREFIX + studentId);
+    return data ? JSON.parse(data) : null;
+  } catch (err) {
+    console.error('getCachedJobs error:', err);
+    return null;
+  }
+}
+
+async function setCachedJobs(studentId, data) {
+  try {
+    await redis.set(JOB_MATCH_PREFIX + studentId, JSON.stringify(data), 'EX', TTL_SECONDS);
+  } catch (err) {
+    console.error('setCachedJobs error:', err);
   }
 }
 
@@ -73,4 +92,4 @@ async function invalidateByTrade(trade) {
   }
 }
 
-module.exports = { getCachedCandidates, setCachedCandidates, invalidateByTrade };
+module.exports = { getCachedCandidates, setCachedCandidates, invalidateByTrade, getCachedJobs, setCachedJobs };

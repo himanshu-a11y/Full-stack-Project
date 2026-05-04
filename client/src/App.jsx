@@ -12,14 +12,20 @@ const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
 const JobList = lazy(() => import('./pages/JobList'));
 const AdminImport = lazy(() => import('./pages/AdminImport'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminLogs = lazy(() => import('./pages/AdminLogs'));
+const AdminUserAudit = lazy(() => import('./pages/AdminUserAudit'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const EmployerRegister = lazy(() => import('./pages/EmployerRegister'));
 const EmployerLogin = lazy(() => import('./pages/EmployerLogin'));
 const PostJob = lazy(() => import('./pages/PostJob'));
 const CandidateList = lazy(() => import('./pages/CandidateList'));
 const EmployerDashboard = lazy(() => import('./pages/EmployerDashboard'));
+const EmployerProfile = lazy(() => import('./pages/EmployerProfile'));
 const JobDetails = lazy(() => import('./pages/JobDetails'));
 const ApplicationSuccess = lazy(() => import('./pages/ApplicationSuccess'));
+const StudentApplications = lazy(() => import('./pages/StudentApplications'));
+const EmployerApplications = lazy(() => import('./pages/EmployerApplications'));
+const Chat = lazy(() => import('./pages/Chat'));
 
 // Simple 404 page
 const NotFound = () => (
@@ -47,7 +53,7 @@ const App = () => {
   return (
     <BrowserRouter>
       {!token && <Navbar />}
-      <div className={`${!token ? 'pt-20' : ''} bg-[#F8FAFC] min-h-screen`}>
+      <div className={`${!token ? 'pt-16' : ''} bg-[#F8FAFC] min-h-screen`}>
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue"></div>
@@ -74,6 +80,14 @@ const App = () => {
               element={
                 <ProtectedRoute requiredRole="student">
                   <StudentProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/applications"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentApplications />
                 </ProtectedRoute>
               }
             />
@@ -105,17 +119,51 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/employer/profile"
+              element={
+                <ProtectedRoute requiredRole="employer">
+                  <EmployerProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employer/applications"
+              element={
+                <ProtectedRoute requiredRole="employer">
+                  <EmployerApplications />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Public & Admin routes */}
             <Route path="/jobs" element={<ProtectedRoute><JobList /></ProtectedRoute>} />
             <Route path="/jobs/:id" element={<ProtectedRoute requiredRole="student"><JobDetails /></ProtectedRoute>} />
-            <Route path="/application-success" element={<ProtectedRoute requiredRole="student"><ApplicationSuccess /></ProtectedRoute>} />
+            <Route path="/application-success" element={<ApplicationSuccess />} />
+            <Route path="/messages" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+            
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/admin/dashboard"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/logs"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminUserAudit />
                 </ProtectedRoute>
               }
             />
@@ -128,7 +176,7 @@ const App = () => {
               }
             />
 
-            {/* 404 */}
+            {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

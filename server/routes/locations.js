@@ -1,5 +1,5 @@
 const express = require('express');
-const { COUNTRIES, STATES_BY_COUNTRY } = require('../../shared/constants.cjs');
+const { COUNTRIES, STATES_BY_COUNTRY } = require('../../shared/constants.js');
 
 const router = express.Router();
 

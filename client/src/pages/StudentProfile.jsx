@@ -61,6 +61,15 @@ const StudentProfile = () => {
 
   const sidebarLinks = [
     {
+      label: 'Dashboard',
+      to: '/student/dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
       label: 'My Profile',
       to: '/student/profile',
       icon: (
@@ -77,7 +86,25 @@ const StudentProfile = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       ),
-    }
+    },
+    {
+      label: 'Applications',
+      to: '/student/applications',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Messages',
+      to: '/messages',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+      ),
+    },
   ];
 
   const handleEditClick = () => {
@@ -124,12 +151,10 @@ const StudentProfile = () => {
   }
 
   return (
-    <div className="flex bg-slate-50 min-h-[calc(100vh-64px)]">
-      <div className="hidden md:block">
-        <Sidebar links={sidebarLinks} title="Student Panel" />
-      </div>
+    <div className="flex bg-[#F0FDF4] h-screen overflow-hidden font-sans">
+      <Sidebar links={sidebarLinks} title="STUDENT NAVIGATION" roleBadge={{ type: 'student', label: 'Student Portal' }} user={profile} />
 
-      <div className="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto h-screen p-6 pt-24 lg:p-12 max-w-4xl mx-auto w-full scrollbar-hide">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
           {isEditing ? (
@@ -167,13 +192,17 @@ const StudentProfile = () => {
                   value={formData.phone || ''}
                   onChange={handleChange}
                 />
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700">ITI Trade</label>
+                 <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">ITI Trade</label>
+                    {profile?.isVerified && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Locked after Verification</span>}
+                  </div>
                   <select
                     name="trade"
                     value={formData.trade || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                    disabled={profile?.isVerified}
+                    className={`w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-navy outline-none ${profile?.isVerified ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
                   >
                     {TRADES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
@@ -217,6 +246,21 @@ const StudentProfile = () => {
                     <option value="">Select district...</option>
                     {districts.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">Certifications (Comma separated)</label>
+                    {profile?.isVerified && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Locked after Verification</span>}
+                  </div>
+                  <input
+                    type="text"
+                    name="certifications"
+                    value={Array.isArray(formData.certifications) ? formData.certifications.join(', ') : formData.certifications || ''}
+                    onChange={(e) => setFormData({ ...formData, certifications: e.target.value.split(',').map(s => s.trim()) })}
+                    disabled={profile?.isVerified}
+                    placeholder="e.g. AWS D1.1, Safety Level 1"
+                    className={`w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-navy outline-none ${profile?.isVerified ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
+                  />
                 </div>
               </div>
             </div>

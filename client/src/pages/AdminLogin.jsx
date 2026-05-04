@@ -61,6 +61,9 @@ const AdminLogin = () => {
             </div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-3">Admin Access</h1>
             <p className="text-slate-500 font-medium tracking-wide">Enter secure credentials to manage the portal</p>
+            <div className="mt-4 inline-block px-4 py-2 bg-slate-100 rounded-xl text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              Hint: admin@skillbridge.gov / admin123
+            </div>
           </div>
 
           <Card className="p-10 shadow-2xl shadow-slate-200/60 rounded-[3rem] border-none bg-white/80 backdrop-blur-xl">

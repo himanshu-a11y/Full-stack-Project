@@ -34,6 +34,7 @@ const EmployerLogin = () => {
       });
       localStorage.setItem('skillbridge_token', res.data.token);
       localStorage.setItem('skillbridge_role', 'employer');
+      localStorage.setItem('skillbridge_user_id', res.data.profile._id);
       window.dispatchEvent(new Event('auth-change'));
       navigate('/employer/dashboard');
     } catch (err) {

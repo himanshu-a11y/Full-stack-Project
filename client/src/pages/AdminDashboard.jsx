@@ -8,34 +8,78 @@ import Badge from '../components/ui/Badge';
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
     totalStudents: 0,
-    totalEmployers: 0,
+    unverifiedCount: 0,
     totalJobs: 0,
     recentImports: []
   });
+  const [unverifiedStudents, setUnverifiedStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchAdminData = async () => {
       try {
-        // Mocking stats for now - replace with actual API calls later
-        setStats({
-          totalStudents: 1250,
-          totalEmployers: 45,
-          totalJobs: 180,
+        const [statsRes, studentsRes] = await Promise.all([
+          axios.get('/api/admin/stats'),
+          axios.get('/api/admin/unverified-students')
+        ]);
+        
+        setStats(prev => ({
+          ...prev,
+          totalStudents: statsRes.data.totalStudents,
+          unverifiedCount: statsRes.data.unverifiedCount,
+          totalJobs: statsRes.data.totalJobs,
           recentImports: [
-            { id: 1, date: '2024-04-28', count: 150, status: 'Success' },
-            { id: 2, date: '2024-04-25', count: 85, status: 'Success' },
-            { id: 3, date: '2024-04-20', count: 12, status: 'Failed' },
+            { id: 1, date: '2024-05-04', count: statsRes.data.totalStudents, status: 'Success' },
           ]
-        });
+        }));
+        setUnverifiedStudents(studentsRes.data.students);
       } catch (err) {
         console.error("Failed to fetch admin stats", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+    fetchAdminData();
+    const interval = setInterval(fetchAdminData, 30000); // Poll every 30 seconds
+    return () => clearInterval(interval);
   }, []);
+
+  const refreshData = () => {
+    setLoading(true);
+    // The useEffect will trigger again if we use a dependency, 
+    // but here we can just call the function.
+    const fetchAdminData = async () => {
+      try {
+        const [statsRes, studentsRes] = await Promise.all([
+          axios.get('/api/admin/stats'),
+          axios.get('/api/admin/unverified-students')
+        ]);
+        setStats(prev => ({
+          ...prev,
+          totalStudents: statsRes.data.totalStudents,
+          unverifiedCount: statsRes.data.unverifiedCount,
+          totalJobs: statsRes.data.totalJobs,
+        }));
+        setUnverifiedStudents(studentsRes.data.students);
+      } catch (err) {
+        console.error("Failed to refresh stats", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAdminData();
+  };
+
+  const handleVerify = async (id) => {
+    try {
+      await axios.patch(`/api/admin/verify-student/${id}`);
+      setUnverifiedStudents(prev => prev.filter(s => s._id !== id));
+      setStats(prev => ({ ...prev, unverifiedCount: prev.unverifiedCount - 1 }));
+    } catch (err) {
+      alert("Failed to verify student");
+    }
+  };
 
   const sidebarLinks = [
     {
@@ -57,6 +101,15 @@ const AdminDashboard = () => {
       ),
     },
     {
+      label: 'User Audit',
+      to: '/admin/users',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ),
+    },
+    {
       label: 'System Logs',
       to: '/admin/logs',
       icon: (
@@ -69,16 +122,14 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex bg-[#F8FAFC] h-screen overflow-hidden font-sans">
-      <div className="hidden lg:block h-full shrink-0">
-        <Sidebar 
-          links={sidebarLinks} 
-          title="ADMIN NAVIGATION" 
-          roleBadge={{ type: 'admin', label: 'Admin Panel' }}
-          user={{ name: 'SkillBridge Admin' }}
-        />
-      </div>
+      <Sidebar 
+        links={sidebarLinks} 
+        title="ADMIN NAVIGATION" 
+        roleBadge={{ type: 'admin', label: 'Admin Panel' }}
+        user={{ name: 'SkillBridge Admin' }}
+      />
 
-      <div className="flex-1 overflow-y-auto h-screen p-6 lg:p-12 max-w-7xl mx-auto w-full scrollbar-hide">
+      <div className="flex-1 overflow-y-auto h-screen p-6 pt-24 lg:p-12 max-w-7xl mx-auto w-full scrollbar-hide">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -88,8 +139,16 @@ const AdminDashboard = () => {
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Admin <span className="text-brand-blue">Command Center</span></h1>
             <p className="text-slate-500 mt-2 font-medium">Monitoring platform-wide activity and infrastructure.</p>
           </div>
-          
-          <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-50">
+
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={refreshData}
+              className="p-4 bg-white rounded-2xl shadow-lg shadow-slate-200 border border-slate-50 text-slate-400 hover:text-brand-blue hover:rotate-180 transition-all duration-700"
+              title="Refresh Data"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.586m15.414 2A9 9 0 1111 21.241V18" /></svg>
+            </button>
+            <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-50">
             <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
@@ -98,14 +157,15 @@ const AdminDashboard = () => {
               <p className="text-sm font-bold text-slate-900">2 mins ago</p>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {[
-            { label: 'Registered Students', value: stats.totalStudents, icon: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z', color: 'text-brand-blue bg-brand-blue/10' },
-            { label: 'Partner Employers', value: stats.totalEmployers, icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', color: 'text-emerald-600 bg-emerald-50' },
-            { label: 'Active Vacancies', value: stats.totalJobs, icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', color: 'text-orange-600 bg-orange-50' },
+            { label: 'Total Alumni', value: stats.totalStudents, icon: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z', color: 'text-brand-blue bg-brand-blue/10' },
+            { label: 'Pending Verification', value: stats.unverifiedCount, icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', color: 'text-rose-600 bg-rose-50' },
+            { label: 'Live Vacancies', value: stats.totalJobs, icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', color: 'text-orange-600 bg-orange-50' },
           ].map((stat, i) => (
             <Card key={i} className="p-8 border-none bg-white shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 rounded-[2.5rem] group">
               <div className={`w-14 h-14 rounded-2xl ${stat.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
@@ -121,51 +181,79 @@ const AdminDashboard = () => {
 
         {/* Action Center */}
         <div className="grid lg:grid-cols-2 gap-10">
-          <Card className="p-10 bg-slate-900 border-none shadow-2xl shadow-slate-900/20 rounded-[3rem] text-white">
-            <h3 className="text-2xl font-black mb-8 tracking-tight">System Controls</h3>
+          <Card className="p-10 bg-white border-none shadow-xl shadow-slate-200/50 rounded-[3rem]">
+            <h3 className="text-2xl font-black mb-8 text-slate-900 tracking-tight">System Controls</h3>
             <div className="grid grid-cols-2 gap-6">
-              <Link to="/admin/import" className="p-8 bg-white/10 rounded-[2.5rem] hover:bg-brand-blue transition-all group border border-white/5">
-                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+              <Link to="/admin/import" className="p-8 bg-slate-50 rounded-[2.5rem] hover:bg-brand-blue hover:text-white transition-all group border border-slate-100">
+                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:bg-white/20 transition-colors">
+                  <svg className="w-7 h-7 text-brand-blue group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                 </div>
                 <p className="text-sm font-black uppercase tracking-widest leading-snug">Bulk Student Import</p>
               </Link>
-              <div className="p-8 bg-white/5 rounded-[2.5rem] opacity-40 cursor-not-allowed border border-white/5">
-                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-4">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <Link to="/admin/users" className="p-8 bg-slate-50 rounded-[2.5rem] hover:bg-orange-500 hover:text-white transition-all group border border-slate-100">
+                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:bg-white/20 transition-colors">
+                  <svg className="w-7 h-7 text-orange-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                 </div>
                 <p className="text-sm font-black uppercase tracking-widest leading-snug">Global User Audit</p>
-              </div>
+              </Link>
             </div>
           </Card>
 
-          <Card className="p-10 bg-white border-none shadow-xl shadow-slate-200/50 rounded-[3rem]">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Recent Data Syncs</h3>
-              <button className="text-xs font-black text-brand-blue uppercase tracking-widest hover:underline">View History</button>
-            </div>
-            <div className="space-y-6">
-              {stats.recentImports.map((imp) => (
-                <div key={imp.id} className="group flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] hover:bg-slate-100/50 transition-colors border border-transparent hover:border-slate-100">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${imp.status === 'Success' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
-                      {imp.status === 'Success' ? (
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                      ) : (
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-slate-900 tracking-wide">Sync Batch #{imp.id}</p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{imp.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-black text-slate-900">{imp.count}</p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Profiles</p>
-                  </div>
+          <Card className="p-10 bg-white border-none shadow-xl shadow-slate-200/50 rounded-[3rem] h-full flex flex-col">
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Vetting Queue</h3>
+                <Badge variant="orange" className="px-3 py-1 text-[10px] uppercase font-black tracking-widest">{unverifiedStudents.length} Pending</Badge>
+              </div>
+              
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-blue transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
-              ))}
+                <input 
+                  type="text" 
+                  placeholder="SEARCH BY EMAIL OR NAME..." 
+                  className="w-full bg-slate-50 border-none rounded-2xl py-4 pl-12 pr-6 text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-brand-blue/20 transition-all shadow-inner"
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-hide min-h-[300px]">
+              {unverifiedStudents.filter(s => 
+                s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                s.email.toLowerCase().includes(searchTerm.toLowerCase())
+              ).length === 0 ? (
+                <div className="py-12 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100">
+                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No matching students found</p>
+                </div>
+              ) : (
+                unverifiedStudents
+                  .filter(s => 
+                    s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    s.email.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((student) => (
+                  <div key={student._id} className="group flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-slate-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-900 font-black">
+                        {student.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-900 tracking-wide">{student.name}</p>
+                        <p className="text-[10px] text-slate-500 font-bold mb-1 italic">{student.email}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{student.trade}</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleVerify(student._id)}
+                      className="px-4 py-2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-200 hover:scale-105 transition-all"
+                    >
+                      Verify
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </Card>
         </div>

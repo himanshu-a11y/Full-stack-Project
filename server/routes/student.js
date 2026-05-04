@@ -2,7 +2,19 @@ const express = require('express');
 const router = express.Router();
 const studentGuard = require('../middleware/studentGuard');
 const Student = require('../models/Student');
+const authGuard = require('../middleware/authGuard');
 const { invalidateByTrade } = require('../services/cache');
+
+// PATCH /api/student/:id/view (increment profile views)
+router.patch('/:id/view', authGuard, async (req, res) => {
+  try {
+    await Student.findByIdAndUpdate(req.params.id, { $inc: { profileViews: 1 } });
+    return res.json({ message: 'View incremented' });
+  } catch (err) {
+    console.error('PATCH /api/student/:id/view error:', err);
+    return res.status(500).json({ message: 'Failed to increment view' });
+  }
+});
 
 // GET /api/student/profile (protected by studentGuard)
 router.get('/profile', studentGuard, async (req, res) => {
@@ -25,21 +37,24 @@ router.put('/profile', studentGuard, async (req, res) => {
     if (!existing) return res.status(404).json({ message: 'Student not found' });
     const oldTrade = existing.trade;
 
-    // Update only the allowed fields
+    // Protection: Verified students cannot change trade/certifications
+    const updateData = {
+      name,
+      phone,
+      country: country || existing.country || 'India',
+      state: state || existing.state || '',
+      district: district || existing.district || '',
+      availability,
+    };
+
+    if (!existing.isVerified) {
+      updateData.trade = trade;
+      updateData.certifications = certifications;
+    }
+
     const updated = await Student.findByIdAndUpdate(
       req.student.id,
-      {
-        $set: {
-          name,
-          phone,
-          trade,
-          country: country || existing.country || 'India',
-          state: state || existing.state || '',
-          district: district || existing.district || '',
-          certifications,
-          availability,
-        },
-      },
+      { $set: updateData },
       { new: true }
     );
 

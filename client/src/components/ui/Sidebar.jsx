@@ -47,7 +47,7 @@ const Sidebar = ({ links = [], title = '', roleBadge = null, user = null, active
 
       {/* Sidebar Content */}
       <aside className={`
-        fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex flex-col z-[80] transition-all duration-500 ease-out lg:translate-x-0 lg:static lg:z-50 h-screen
+        fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex flex-col z-[80] transition-all duration-500 ease-out lg:translate-x-0 lg:static lg:z-50 h-full
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Branding Section */}

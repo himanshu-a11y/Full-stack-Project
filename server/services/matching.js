@@ -1,4 +1,5 @@
 const Student = require('../models/Student');
+const Job = require('../models/Job');
 
 // matchCandidates(job, weights)
 // Scores students against a job using aggregation pipeline
@@ -50,18 +51,18 @@ async function matchCandidates(job, weights = {}) {
                   $gt: [
                     {
                       $size: {
-                        $ifNull: [
-                          { $setIntersection: ['$certifications', job.certRequired || []] },
-                          [],
-                        ],
-                      },
+                        $setIntersection: [
+                          { $map: { input: { $ifNull: ["$certifications", []] }, as: "c", in: { $toLower: { $trim: { input: "$$c" } } } } },
+                          { $map: { input: { $ifNull: [job.certRequired, []] }, as: "cr", in: { $toLower: { $trim: { input: "$$cr" } } } } }
+                        ]
+                      }
                     },
-                    0,
-                  ],
+                    0
+                  ]
                 },
                 then: w.cert,
-                else: 0,
-              },
+                else: 0
+              }
             },
           ],
         },
@@ -86,6 +87,7 @@ async function matchCandidates(job, weights = {}) {
         certifications: 1,
         phone:          1,
         score:          1,
+        isVerified:     1,
       },
     },
   ];
@@ -93,4 +95,77 @@ async function matchCandidates(job, weights = {}) {
   return Student.aggregate(pipeline);
 }
 
-module.exports = { matchCandidates };
+// matchJobs(student, weights)
+// Scores jobs against a student using aggregation pipeline
+async function matchJobs(student, weights = {}) {
+  const w = {
+    trade:    weights.trade    !== undefined ? Number(weights.trade)    : 40,
+    district: weights.district !== undefined ? Number(weights.district) : 30,
+    cert:     weights.cert     !== undefined ? Number(weights.cert)     : 30,
+  };
+
+  const studentStateOrDistrict = student.state || student.district || '';
+
+  const pipeline = [
+    // Stage 1: Active jobs
+    // In this app, we might not have a job 'status', but we can filter out past jobs if needed.
+    // Assuming all jobs are active. We'll just do a basic match if there are required base filters.
+    // For now, match all.
+    { $match: {} },
+
+    // Stage 2: compute score
+    {
+      $addFields: {
+        score: {
+          $add: [
+            {
+              $cond: {
+                if:   { $eq: ['$trade', student.trade] },
+                then: w.trade,
+                else: 0,
+              },
+            },
+            {
+              $cond: {
+                if: {
+                  $eq: [
+                    { $ifNull: ['$state', '$district'] },
+                    studentStateOrDistrict,
+                  ],
+                },
+                then: w.district,
+                else: 0,
+              },
+            },
+            {
+              $cond: {
+                if: {
+                  $gt: [
+                    {
+                      $size: {
+                        $setIntersection: [
+                          { $map: { input: { $ifNull: ["$certRequired", []] }, as: "cr", in: { $toLower: { $trim: { input: "$$cr" } } } } },
+                          { $map: { input: { $ifNull: [student.certifications, []] }, as: "sc", in: { $toLower: { $trim: { input: "$$sc" } } } } }
+                        ]
+                      }
+                    },
+                    0
+                  ]
+                },
+                then: w.cert,
+                else: 0
+              }
+            },
+          ],
+        },
+      },
+    },
+
+    // Stage 3: highest score first
+    { $sort: { score: -1 } },
+  ];
+
+  return Job.aggregate(pipeline);
+}
+
+module.exports = { matchCandidates, matchJobs };

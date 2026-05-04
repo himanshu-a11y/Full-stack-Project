@@ -6,7 +6,9 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   if (!token) {
     // No token, send to appropriate login
-    const loginPath = requiredRole === 'employer' ? '/employer/login' : '/student/login';
+    let loginPath = '/student/login';
+    if (requiredRole === 'employer') loginPath = '/employer/login';
+    if (requiredRole === 'admin') loginPath = '/admin/login';
     return <Navigate to={loginPath} replace />;
   }
 

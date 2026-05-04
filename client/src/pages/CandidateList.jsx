@@ -6,6 +6,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
+import Modal from '../components/ui/Modal';
 
 const CandidateList = () => {
   const { id } = useParams();
@@ -15,6 +16,8 @@ const CandidateList = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [cached, setCached] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [weights, setWeights] = useState({
     tradeW: 40,
@@ -71,15 +74,6 @@ const CandidateList = () => {
 
   const sidebarLinks = [
     {
-      label: 'Post New Job',
-      to: '/employer/post-job',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-        </svg>
-      ),
-    },
-    {
       label: 'Dashboard',
       to: '/employer/dashboard',
       icon: (
@@ -89,11 +83,38 @@ const CandidateList = () => {
       ),
     },
     {
-      label: 'Browse Jobs',
-      to: '/jobs',
+      label: 'Manage Applications',
+      to: '/employer/applications',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Messages',
+      to: '/messages',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Post New Job',
+      to: '/employer/post-job',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Company Profile',
+      to: '/employer/profile',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       ),
     },
@@ -101,15 +122,13 @@ const CandidateList = () => {
 
   return (
     <div className="flex bg-[#F0FDF4] h-screen overflow-hidden font-sans">
-      <div className="hidden lg:block h-full shrink-0">
-        <Sidebar
-          links={sidebarLinks}
-          title="EMPLOYER PORTAL"
-          roleBadge={{ type: 'employer', label: 'Employer Hub' }}
-        />
-      </div>
+      <Sidebar
+        links={sidebarLinks}
+        title="EMPLOYER PORTAL"
+        roleBadge={{ type: 'employer', label: 'Employer Hub' }}
+      />
 
-      <div className="flex-1 overflow-y-auto h-screen p-6 lg:p-12 max-w-7xl mx-auto w-full scrollbar-hide">
+      <div className="flex-1 overflow-y-auto h-screen p-6 pt-24 lg:p-12 max-w-7xl mx-auto w-full scrollbar-hide">
         {/* Main Content Area */}
         <div className="max-w-6xl mx-auto p-6 md:p-8 space-y-8">
 
@@ -281,7 +300,18 @@ const CandidateList = () => {
                   <div className="flex-grow space-y-2">
                     <div className="flex items-center gap-3">
                       <h3 className="text-2xl font-black text-slate-900 group-hover:text-brand-blue transition-colors">{candidate.name}</h3>
-                      {index === 0 && <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">Top Match</span>}
+                      {candidate.isVerified ? (
+                        <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 shadow-sm" title="Institutional Verified">
+                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                          <span className="text-[10px] font-black uppercase tracking-widest">Verified</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100" title="Manual Registration - Not yet vetted">
+                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                          <span className="text-[10px] font-black uppercase tracking-widest">Unverified</span>
+                        </div>
+                      )}
+                      {index === 0 && <span className="bg-brand-blue/10 text-brand-blue text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-brand-blue/20">Top Match</span>}
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-slate-500">
                       <div className="flex items-center gap-1.5">
@@ -336,7 +366,16 @@ const CandidateList = () => {
                 {/* View Profile Action (SaaS style) */}
                 <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   <div className="text-xs font-bold text-slate-400 italic">Candidate profile ready for review</div>
-                  <Button variant="outline" className="text-xs font-bold rounded-xl h-9 hover:bg-slate-900 hover:text-white transition-all">
+                  <Button 
+                    variant="outline" 
+                    className="text-xs font-bold rounded-xl h-9 hover:bg-slate-900 hover:text-white transition-all"
+                    onClick={() => {
+                      setSelectedCandidate(candidate);
+                      setIsModalOpen(true);
+                      // Increment view count when details are opened
+                      axios.patch(`/api/student/${candidate._id}/view`).catch(err => console.error(err));
+                    }}
+                  >
                     Detailed Analytics
                     <svg className="w-3 h-3 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
                   </Button>
@@ -376,6 +415,80 @@ const CandidateList = () => {
           )}
         </div>
       </div>
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Candidate Detailed Analysis"
+      >
+        {selectedCandidate && (
+          <div className="space-y-10">
+            <div className="flex items-center gap-8">
+              <div className="w-24 h-24 bg-brand-blue text-white rounded-[1.5rem] flex items-center justify-center text-4xl font-black shadow-xl shadow-brand-blue/20">
+                {selectedCandidate.name.charAt(0)}
+              </div>
+              <div>
+                <h4 className="text-3xl font-black text-slate-900 mb-2">{selectedCandidate.name}</h4>
+                <div className="flex items-center gap-3">
+                  {selectedCandidate.isVerified ? (
+                    <Badge variant="green" className="px-4 py-1.5 text-[9px] uppercase font-black tracking-[0.2em] shadow-lg shadow-emerald-100">Verified Alumni</Badge>
+                  ) : (
+                    <Badge variant="orange" className="px-4 py-1.5 text-[9px] uppercase font-black tracking-[0.2em] shadow-lg shadow-orange-50 border border-orange-100">Unverified Account</Badge>
+                  )}
+                  <Badge variant="blue" className="px-4 py-1.5 text-[9px] uppercase font-black tracking-[0.2em] shadow-lg shadow-blue-50">{selectedCandidate.trade}</Badge>
+                  <span className="text-slate-400 font-bold text-sm">•</span>
+                  <span className="text-slate-500 font-bold text-sm">{selectedCandidate.district}, {selectedCandidate.state}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8">
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Overall Match Score</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black text-slate-900">{selectedCandidate.score}</span>
+                  <span className="text-xl font-bold text-slate-400">/ 100</span>
+                </div>
+              </div>
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Contact Information</p>
+                <p className="text-xl font-bold text-slate-900">{selectedCandidate.phone}</p>
+                <p className="text-xs text-slate-500 mt-1 font-medium">Verified Phone Line</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h5 className="text-sm font-black text-slate-900 uppercase tracking-widest">Verified Certifications</h5>
+              <div className="flex flex-wrap gap-3">
+                {selectedCandidate.certifications?.length > 0 ? (
+                  selectedCandidate.certifications.map(cert => (
+                    <div key={cert} className="px-5 py-3 bg-white border-2 border-slate-100 rounded-2xl flex items-center gap-3 hover:border-brand-blue/30 transition-all">
+                      <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                      </div>
+                      <span className="text-sm font-bold text-slate-700">{cert}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400 italic">No certifications listed</p>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-slate-100 flex gap-4">
+              <Button fullWidth className="bg-slate-900 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-200">Download Resume</Button>
+              <Button 
+                fullWidth 
+                variant="outline" 
+                className="py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+                onClick={() => navigate('/messages')}
+              >
+                Initiate Chat
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

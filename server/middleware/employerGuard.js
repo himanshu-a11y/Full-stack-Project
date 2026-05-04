@@ -13,6 +13,7 @@ module.exports = function employerGuard(req, res, next) {
     if (decoded.role !== 'employer') {
       return res.status(403).json({ message: 'Access denied: not an employer token' });
     }
+    console.log(`employerGuard: Authenticated employer ID: ${decoded.id}`);
     req.employer = decoded;
     next();
   } catch (err) {

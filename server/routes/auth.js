@@ -71,6 +71,21 @@ router.post('/employer/register', async (req, res) => {
 router.post('/auth/login', async (req, res) => {
   try {
     const { email, password, role } = req.body;
+    const trimmedEmail = email?.trim();
+    const trimmedPass = password?.trim();
+
+    // Handle Admin Login separately (Hardcoded for single-tenant institution owner)
+    if (role === 'admin') {
+      const ADMIN_EMAIL = 'admin@skillbridge.gov';
+      const ADMIN_PASS = 'admin123'; // In a real app, this would be in DB or ENV
+
+      if (trimmedEmail === ADMIN_EMAIL && trimmedPass === ADMIN_PASS) {
+        const token = jwt.sign({ role: 'admin', email: ADMIN_EMAIL }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        return res.json({ token, role: 'admin', profile: { name: 'Institutional Admin' } });
+      }
+      return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+
     const Model = role === 'student' ? Student : Employer;
     const user = await Model.findOne({ email });
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });

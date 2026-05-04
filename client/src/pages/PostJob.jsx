@@ -32,7 +32,7 @@ const PostJob = () => {
   useEffect(() => {
     const fetchMyJobs = async () => {
       try {
-        const res = await axios.get('/api/jobs?page=1&limit=50');
+        const res = await axios.get('/api/jobs/my-jobs');
         setMyJobs(res.data.jobs || []);
       } catch (err) {
         console.error('Could not load jobs:', err);
@@ -107,23 +107,57 @@ const PostJob = () => {
 
   const sidebarLinks = [
     {
-      label: 'Post New Job',
+      label: 'Dashboard',
       to: '/employer/dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Manage Applications',
+      to: '/employer/applications',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Messages',
+      to: '/messages',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Post New Job',
+      to: '/employer/post-job',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
         </svg>
       ),
     },
+    {
+      label: 'Company Profile',
+      to: '/employer/profile',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+    },
   ];
 
   return (
-    <div className="flex bg-slate-50 min-h-[calc(100vh-64px)]">
-      <div className="hidden md:block">
-        <Sidebar links={sidebarLinks} title="Employer Panel" />
-      </div>
+    <div className="flex bg-[#F0FDF4] h-screen overflow-hidden font-sans">
+      <Sidebar links={sidebarLinks} title="EMPLOYER NAVIGATION" roleBadge={{ type: 'employer', label: 'Employer Hub' }} />
 
-      <div className="flex-1 p-6 md:p-10 max-w-5xl mx-auto overflow-y-auto">
+      <div className="flex-1 overflow-y-auto h-screen p-6 pt-24 lg:p-12 max-w-5xl mx-auto w-full scrollbar-hide">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Employer Dashboard</h1>
           <p className="text-gray-600">Manage your job listings and find the best candidates.</p>

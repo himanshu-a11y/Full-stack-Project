@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
 });
 
 api.interceptors.request.use((config) => {
@@ -27,7 +27,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('skillbridge_token');
       localStorage.removeItem('skillbridge_role');
-      window.location.href = '/';
+      // Don't redirect if we are already on a login page
+      if (!window.location.pathname.includes('login')) {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }

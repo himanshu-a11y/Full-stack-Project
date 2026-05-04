@@ -111,7 +111,7 @@ async function seed() {
       password:       hashedPassword,
       trade,
       country:        'India',
-      state:          district,
+      state:          'Gujarat',
       district,
       certifications: certs,
       availability:   true,
@@ -147,7 +147,7 @@ async function seed() {
     ...t,
     description: `We are looking for a skilled ${t.trade} in the ${t.district} region.`,
     country: 'India',
-    state: t.district,
+    state: 'Gujarat',
     employerId:  insertedEmployers[0]._id,
   }));
 
