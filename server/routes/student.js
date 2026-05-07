@@ -3,7 +3,7 @@ const router = express.Router();
 const studentGuard = require('../middleware/studentGuard');
 const Student = require('../models/Student');
 const authGuard = require('../middleware/authGuard');
-const { invalidateByTrade } = require('../services/cache');
+const { invalidateByTrade, invalidateStudentMatch } = require('../services/cache');
 
 // PATCH /api/student/:id/view (increment profile views)
 router.patch('/:id/view', authGuard, async (req, res) => {
@@ -29,6 +29,7 @@ router.get('/profile', studentGuard, async (req, res) => {
 
 // PUT /api/student/profile  (protected by studentGuard)
 router.put('/profile', studentGuard, async (req, res) => {
+  console.log(`[STUDENT_API] Received profile update request for ID: ${req.student.id}`);
   try {
     const { name, phone, trade, country, state, district, certifications, availability } = req.body;
 
@@ -59,10 +60,15 @@ router.put('/profile', studentGuard, async (req, res) => {
     );
 
     // Invalidate the cache for the student's current trade to reflect new scores
-    invalidateByTrade(updated.trade);
+    console.log(`[AUTH] Student profile updated. Invalidating cache for trade: ${updated.trade}`);
+    await invalidateByTrade(updated.trade);
     if (oldTrade && oldTrade !== updated.trade) {
-      invalidateByTrade(oldTrade);
+      console.log(`[AUTH] Trade changed. Also invalidating old trade cache: ${oldTrade}`);
+      await invalidateByTrade(oldTrade);
     }
+
+    // Also invalidate the student's own job match cache
+    await invalidateStudentMatch(req.student.id);
 
     res.json({ student: updated });
   } catch (err) {

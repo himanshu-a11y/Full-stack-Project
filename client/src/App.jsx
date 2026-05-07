@@ -112,6 +112,14 @@ const App = () => {
               }
             />
             <Route
+              path="/employer/edit-job/:id"
+              element={
+                <ProtectedRoute requiredRole="employer">
+                  <PostJob />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/employer/jobs/:id/candidates"
               element={
                 <ProtectedRoute requiredRole="employer">

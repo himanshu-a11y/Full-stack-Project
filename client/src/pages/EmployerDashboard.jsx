@@ -39,6 +39,17 @@ const EmployerDashboard = () => {
     fetchDashboardData();
   }, []);
 
+  const handleDelete = async (jobId) => {
+    if (!window.confirm("Are you sure you want to delete this job? This will also delete all applications for it.")) return;
+    try {
+      await axios.delete(`/api/jobs/${jobId}`);
+      setJobs(jobs.filter(j => j._id !== jobId));
+      setStats(prev => ({ ...prev, totalJobs: prev.totalJobs - 1 }));
+    } catch (err) {
+      alert("Failed to delete job.");
+    }
+  };
+
   const sidebarLinks = [
     {
       label: 'Dashboard',
@@ -171,13 +182,25 @@ const EmployerDashboard = () => {
                       </td>
                       <td className="px-4 py-5 font-medium">{job.trade}</td>
                       <td className="px-4 py-5 text-slate-500">{job.district}</td>
-                      <td className="px-4 py-5 text-right">
+                      <td className="px-4 py-5 text-right flex justify-end gap-2">
                         <Link
                           to={`/employer/jobs/${job._id}/candidates`}
-                          className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full font-bold text-xs group-hover:bg-brand-blue group-hover:text-white transition-all"
+                          className="bg-blue-50 text-brand-blue px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-brand-blue hover:text-white transition-all"
                         >
-                          View Candidates
+                          Candidates
                         </Link>
+                        <button
+                          onClick={() => navigate(`/employer/edit-job/${job._id}`)}
+                          className="bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-slate-200 transition-all"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(job._id)}
+                          className="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}

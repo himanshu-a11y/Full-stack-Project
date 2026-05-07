@@ -161,6 +161,13 @@ router.post('/import', upload.single('file'), async (req, res) => {
       }
     }
     const result = await Student.bulkWrite(ops, { ordered: false });
+
+    // Invalidate caches for all affected trades
+    const affectedTrades = [...new Set(rows.map(r => r.trade))];
+    for (const trade of affectedTrades) {
+      await invalidateCache(trade);
+    }
+
     res.json({ inserted: result.upsertedCount, updated: result.modifiedCount, errors });
   } catch (err) {
     res.status(500).json({ message: err.message, errors });

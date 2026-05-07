@@ -5,12 +5,14 @@ import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
+import JobTicker from '../components/JobTicker';
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [recentJobs, setRecentJobs] = useState([]);
+  const [tickerJobs, setTickerJobs] = useState([]);
   const [stats, setStats] = useState({ applications: 0, skillMatches: 0, messages: 0, profileViews: 0 });
 
   const calculateCompletion = (user) => {
@@ -47,10 +49,20 @@ const StudentDashboard = () => {
           axios.get('/api/messages/unread-count')
         ]);
         setProfile(profileRes.data.student);
-        setRecentJobs(jobsRes.data.jobs?.slice(0, 3) || []);
+        const matches = jobsRes.data.jobs || [];
+        setRecentJobs(matches.slice(0, 3));
+        
+        // If matches are empty, fetch all jobs for the ticker to ensure it's not empty
+        if (matches.length === 0) {
+          const allJobsRes = await axios.get('/api/jobs');
+          setTickerJobs(allJobsRes.data.jobs || []);
+        } else {
+          setTickerJobs(matches);
+        }
+
         setStats({
           applications: appsRes.data.applications?.length || 0,
-          skillMatches: jobsRes.data.jobs?.length || 0,
+          skillMatches: matches.length || 0,
           messages: messagesRes.data.count || 0,
           profileViews: profileRes.data.student?.profileViews || 0
         });
@@ -133,6 +145,8 @@ const StudentDashboard = () => {
 
       <div className="flex-1 overflow-y-auto h-full p-6 pt-24 lg:p-12 w-full scrollbar-hide">
         <div className="max-w-6xl mx-auto">
+          <JobTicker jobs={tickerJobs} />
+          
           {/* Welcome Header */}
           <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>

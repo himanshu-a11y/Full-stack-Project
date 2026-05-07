@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import { TRADES, CERTIFICATIONS } from '../../../shared/constants.js';
 import Sidebar from '../components/ui/Sidebar';
@@ -10,6 +10,9 @@ import Alert from '../components/ui/Alert';
 import { getCountries, getStates, getDistricts } from '../api/locations';
 
 const PostJob = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [isEdit, setIsEdit] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     trade: '',
@@ -30,6 +33,34 @@ const PostJob = () => {
   const [districts, setDistricts] = useState([]);
 
   useEffect(() => {
+    const fetchJobToEdit = async () => {
+      if (id) {
+        try {
+          setIsEdit(true);
+          const res = await axios.get(`/api/jobs/${id}`);
+          const job = res.data.job;
+          setFormData({
+            title: job.title,
+            trade: job.trade,
+            country: job.country,
+            state: job.state,
+            district: job.district,
+            certRequired: job.certRequired || [],
+            description: job.description
+          });
+        } catch (err) {
+          console.error("Failed to fetch job for edit", err);
+          setError("Failed to load job details.");
+        }
+      } else {
+        setIsEdit(false);
+        setFormData({ title: '', trade: '', country: 'India', state: '', district: '', certRequired: [], description: '' });
+      }
+    };
+    fetchJobToEdit();
+  }, [id]);
+
+  useEffect(() => {
     const fetchMyJobs = async () => {
       try {
         const res = await axios.get('/api/jobs/my-jobs');
@@ -41,7 +72,7 @@ const PostJob = () => {
       }
     };
     fetchMyJobs();
-  }, [success]);
+  }, [success, id]);
 
   useEffect(() => {
     const loadCountries = async () => {
@@ -95,13 +126,31 @@ const PostJob = () => {
     setSuccess('');
 
     try {
-      const res = await axios.post('/api/jobs', formData);
-      setSuccess('Job posted successfully! Job ID: ' + res.data.job._id);
-      setFormData({ title: '', trade: '', country: formData.country || 'India', state: '', district: '', certRequired: [], description: '' });
+      if (isEdit) {
+        await axios.put(`/api/jobs/${id}`, formData);
+        setSuccess('Job updated successfully!');
+        setTimeout(() => navigate('/employer/post-job'), 2000);
+      } else {
+        const res = await axios.post('/api/jobs', formData);
+        setSuccess('Job posted successfully! Job ID: ' + res.data.job._id);
+        setFormData({ title: '', trade: '', country: formData.country || 'India', state: '', district: '', certRequired: [], description: '' });
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to post job. Please try again.');
+      setError(err.response?.data?.message || 'Operation failed. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (jobId) => {
+    if (!window.confirm("Are you sure you want to delete this job? This will also delete all applications for it.")) return;
+    try {
+      await axios.delete(`/api/jobs/${jobId}`);
+      setMyJobs(myJobs.filter(j => j._id !== jobId));
+      setSuccess("Job deleted successfully.");
+      if (id === jobId) navigate('/employer/post-job');
+    } catch (err) {
+      setError("Failed to delete job.");
     }
   };
 
@@ -165,9 +214,14 @@ const PostJob = () => {
 
         {/* Post Job Form */}
         <Card className="p-6 md:p-8 mb-10">
-          <div className="border-b border-gray-100 pb-4 mb-6">
-            <h2 className="text-xl font-semibold text-brand-navy">Post a New Job</h2>
-            <p className="text-sm text-gray-500 mt-1">Fill out the requirements to find the right ITI candidate.</p>
+          <div className="border-b border-gray-100 pb-4 mb-6 flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-brand-navy">{isEdit ? 'Edit Job Posting' : 'Post a New Job'}</h2>
+              <p className="text-sm text-gray-500 mt-1">{isEdit ? 'Update your job requirements.' : 'Fill out the requirements to find the right ITI candidate.'}</p>
+            </div>
+            {isEdit && (
+              <Button variant="outline" size="sm" onClick={() => navigate('/employer/post-job')}>Cancel Edit</Button>
+            )}
           </div>
 
           {error && <Alert variant="error" className="mb-6">{error}</Alert>}
@@ -280,10 +334,15 @@ const PostJob = () => {
               />
             </div>
 
-            <div className="pt-2">
-              <Button type="submit" loading={loading}>
-                {loading ? 'Posting...' : 'Post Job'}
+            <div className="pt-2 flex gap-4">
+              <Button type="submit" loading={loading} className="flex-1">
+                {loading ? (isEdit ? 'Updating...' : 'Posting...') : (isEdit ? 'Update Job' : 'Post Job')}
               </Button>
+              {isEdit && (
+                <Button type="button" variant="outline" onClick={() => navigate('/employer/post-job')} className="px-8">
+                  Cancel
+                </Button>
+              )}
             </div>
           </form>
         </Card>
@@ -317,14 +376,25 @@ const PostJob = () => {
                       <td className="px-4 py-4 font-medium text-gray-900">{job.title}</td>
                       <td className="px-4 py-4">{job.trade}</td>
                       <td className="px-4 py-4">{job.state || job.district}, {job.country || 'India'}</td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 flex flex-wrap gap-2">
                         <Link
                           to={`/employer/jobs/${job._id}/candidates`}
-                          className="text-brand-blue font-medium hover:underline inline-flex items-center gap-1"
+                          className="bg-blue-50 text-brand-blue px-3 py-1 rounded-md font-bold text-[10px] uppercase tracking-wider hover:bg-brand-blue hover:text-white transition-all"
                         >
-                          View Candidates
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                          Candidates
                         </Link>
+                        <button
+                          onClick={() => navigate(`/employer/edit-job/${job._id}`)}
+                          className="bg-slate-50 text-slate-600 px-3 py-1 rounded-md font-bold text-[10px] uppercase tracking-wider hover:bg-slate-200 transition-all"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(job._id)}
+                          className="bg-rose-50 text-rose-600 px-3 py-1 rounded-md font-bold text-[10px] uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}

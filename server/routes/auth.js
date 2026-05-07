@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const Student = require('../models/Student');
 const Employer = require('../models/Employer');
 const employerGuard = require('../middleware/employerGuard');
+const { invalidateByTrade } = require('../services/cache');
 
 // POST /api/student/register
 router.post('/student/register', async (req, res) => {
@@ -45,6 +46,9 @@ router.post('/student/register', async (req, res) => {
         district: student.district,
       },
     });
+
+    // Invalidate employer match cache for this trade so new student appears immediately
+    if (invalidateByTrade) await invalidateByTrade(student.trade);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

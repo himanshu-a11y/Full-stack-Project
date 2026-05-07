@@ -15,9 +15,11 @@ const JobList = () => {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({ trade: '', country: '', state: '', district: '' });
-  const [isSmartMatch, setIsSmartMatch] = useState(false);
-  const [shouldFetchMatch, setShouldFetchMatch] = useState(0);
+  const [isSmartMatch, setIsSmartMatch] = useState(true);
   const [role, setRole] = useState(localStorage.getItem('skillbridge_role'));
+  const [weights, setWeights] = useState({ tradeW: 40, districtW: 30, certW: 30 });
+  const [weightError, setWeightError] = useState('');
+  const [cached, setCached] = useState(false);
 
   // Locations data
   const [countries, setCountries] = useState([]);
@@ -72,8 +74,12 @@ const JobList = () => {
   const fetchJobs = useCallback(async (pageNum, currentFilters, smartMatch) => {
     setLoading(true);
     try {
-      const endpoint = smartMatch ? '/api/jobs/smart-match' : '/api/jobs';
-      const params = smartMatch ? {} : { 
+      const endpoint = smartMatch ? '/api/jobs/match' : '/api/jobs';
+      const params = smartMatch ? { 
+        tradeW: weights.tradeW, 
+        districtW: weights.districtW, 
+        certW: weights.certW 
+      } : { 
         page: pageNum, 
         limit: 10,
         ...currentFilters
@@ -81,6 +87,7 @@ const JobList = () => {
       
       const res = await axios.get(endpoint, { params });
       const newJobs = res.data.jobs || [];
+      if (smartMatch) setCached(res.data.cached || false);
       
       if (smartMatch) {
         setJobs(newJobs);
@@ -94,12 +101,12 @@ const JobList = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [weights]);
 
   useEffect(() => {
     setPage(1);
     fetchJobs(1, filters, isSmartMatch);
-  }, [filters, isSmartMatch, fetchJobs, shouldFetchMatch]);
+  }, [filters, isSmartMatch, fetchJobs]);
 
   useEffect(() => {
     if (page > 1 && !isSmartMatch) {
@@ -107,17 +114,21 @@ const JobList = () => {
     }
   }, [page, isSmartMatch, fetchJobs, filters]);
 
-  const handleApply = async (jobId) => {
-    if (role !== 'student') {
-      alert("Only students can apply for jobs.");
-      return;
+  const handleWeightChange = (e) => {
+    const { name, value } = e.target;
+    const updated = { ...weights, [name]: parseInt(value) };
+    setWeights(updated);
+    const total = updated.tradeW + updated.districtW + updated.certW;
+    if (total !== 100) {
+      setWeightError(`Weights must add up to 100. Current total: ${total}`);
+    } else {
+      setWeightError('');
     }
-    try {
-      await axios.post(`/api/jobs/${jobId}/apply`);
-      navigate('/application-success');
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to apply');
-    }
+  };
+
+  const handleRematch = () => {
+    if (weights.tradeW + weights.districtW + weights.certW !== 100) return;
+    fetchJobs(1, filters, true);
   };
 
   const studentLinks = [
@@ -234,7 +245,25 @@ const JobList = () => {
               <p className="text-slate-500 font-medium mt-1">Browse through hundreds of opportunities across different trades and locations.</p>
             </div>
             <div className="flex gap-3">
-              {/* Redundant buttons removed */}
+              {isSmartMatch && (
+                <div className="hidden md:flex flex-col items-end mr-4">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Engine Status</span>
+                  {cached ? (
+                    <span className="text-sm font-semibold text-emerald-600">Optimizer Cache</span>
+                  ) : (
+                    <span className="text-sm font-semibold text-blue-600">Live Database</span>
+                  )}
+                </div>
+              )}
+              {role === 'student' && (
+                <button 
+                  onClick={() => setIsSmartMatch(!isSmartMatch)}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${isSmartMatch ? 'bg-brand-blue text-white shadow-xl shadow-brand-blue/30' : 'bg-white text-slate-600 shadow-soft hover:shadow-card hover:-translate-y-0.5'}`}
+                >
+                  <span className={isSmartMatch ? 'animate-pulse' : ''}>✨</span>
+                  {isSmartMatch ? 'Smart Match Active' : 'Enable Smart Match'}
+                </button>
+              )}
             </div>
           </div>
 
@@ -244,14 +273,6 @@ const JobList = () => {
               <Card className="p-8 border-0 shadow-soft sticky top-0 bg-white">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="font-black text-slate-900 uppercase tracking-widest text-[10px]">{isSmartMatch ? 'Smart Match ✨' : 'Search Filters'}</h3>
-                  {role === 'student' && (
-                    <button 
-                      onClick={() => setIsSmartMatch(!isSmartMatch)}
-                      className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full transition-all ${isSmartMatch ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                    >
-                      {isSmartMatch ? 'Disable Smart Match' : 'Smart Match ✨'}
-                    </button>
-                  )}
                 </div>
 
                 {!isSmartMatch ? (
@@ -289,8 +310,45 @@ const JobList = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
-                    <p className="text-xs text-blue-600 font-medium leading-relaxed italic">Smart Match automatically sorts jobs based on your trade, certifications, and location preferences.</p>
+                  <div className="space-y-6">
+                    <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                      <p className="text-xs text-blue-600 font-medium leading-relaxed italic">Tune engine parameters to refine your job recommendations.</p>
+                    </div>
+
+                    {weightError && <div className="text-[10px] font-bold text-rose-500 uppercase tracking-tight">{weightError}</div>}
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trade Match</span>
+                        <span className="text-xs font-black text-brand-blue">{weights.tradeW}%</span>
+                      </div>
+                      <input type="range" name="tradeW" min="0" max="100" step="5" value={weights.tradeW} onChange={handleWeightChange} className="w-full accent-brand-blue" />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location</span>
+                        <span className="text-xs font-black text-brand-blue">{weights.districtW}%</span>
+                      </div>
+                      <input type="range" name="districtW" min="0" max="100" step="5" value={weights.districtW} onChange={handleWeightChange} className="w-full accent-brand-blue" />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Certificates</span>
+                        <span className="text-xs font-black text-brand-blue">{weights.certW}%</span>
+                      </div>
+                      <input type="range" name="certW" min="0" max="100" step="5" value={weights.certW} onChange={handleWeightChange} className="w-full accent-brand-blue" />
+                    </div>
+
+                    <Button 
+                      fullWidth 
+                      onClick={handleRematch} 
+                      disabled={weights.tradeW + weights.districtW + weights.certW !== 100 || loading}
+                      className="mt-4"
+                    >
+                      Re-calculate
+                    </Button>
                   </div>
                 )}
               </Card>
@@ -363,7 +421,15 @@ const JobList = () => {
                             </div>
                             <div className="shrink-0 flex items-center md:self-center">
                               <Button 
-                                onClick={() => handleApply(job._id)}
+                                onClick={async () => {
+                                  if (role !== 'student') return alert("Only students can apply.");
+                                  try {
+                                    await axios.post(`/api/jobs/${job._id}/apply`);
+                                    navigate('/application-success');
+                                  } catch (err) {
+                                    alert(err.response?.data?.message || 'Failed to apply');
+                                  }
+                                }}
                                 className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 group-hover:bg-brand-blue group-hover:shadow-brand-blue/30 transition-all"
                               >
                                 Apply Now

@@ -17,7 +17,7 @@ async function matchCandidates(job, weights = {}) {
       $match: {
         status:       'active',
         availability: true,
-        trade:        job.trade,
+        trade:        { $regex: new RegExp(`^${job.trade}$`, 'i') },
       },
     },
 
@@ -28,7 +28,7 @@ async function matchCandidates(job, weights = {}) {
           $add: [
             {
               $cond: {
-                if:   { $eq: ['$trade', job.trade] },
+                if:   { $regexMatch: { input: "$trade", regex: `^${job.trade}$`, options: "i" } },
                 then: w.trade,
                 else: 0,
               },
@@ -163,6 +163,44 @@ async function matchJobs(student, weights = {}) {
 
     // Stage 3: highest score first
     { $sort: { score: -1 } },
+
+    // Stage 4: Lookup employer details
+    {
+      $lookup: {
+        from: 'employers',
+        localField: 'employerId',
+        foreignField: '_id',
+        as: 'employerDetails'
+      }
+    },
+
+    // Stage 5: Unwind employerDetails
+    {
+      $unwind: {
+        path: '$employerDetails',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+
+    // Stage 6: Project final fields
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+        description: 1,
+        trade: 1,
+        country: 1,
+        state: 1,
+        district: 1,
+        certRequired: 1,
+        score: 1,
+        employerId: {
+          _id: '$employerDetails._id',
+          companyName: '$employerDetails.companyName',
+          isVerified: '$employerDetails.isVerified'
+        }
+      }
+    }
   ];
 
   return Job.aggregate(pipeline);

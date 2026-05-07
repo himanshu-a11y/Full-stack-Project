@@ -20,7 +20,13 @@ try {
   setCachedCandidates = cache.setCachedCandidates;
   getCachedJobs = cache.getCachedJobs;
   setCachedJobs = cache.setCachedJobs;
+  invalidateStudentMatches = cache.invalidateStudentMatches;
 } catch (_) {}
+
+router.use((req, res, next) => {
+  console.log(`Job Router: ${req.method} ${req.url}`);
+  next();
+});
 
 // POST /api/jobs — employer creates a job (protected)
 router.post('/', employerGuard, async (req, res) => {
@@ -36,6 +42,10 @@ router.post('/', employerGuard, async (req, res) => {
       description,
       employerId: req.employer.id,
     });
+    
+    // Invalidate student-side match cache so new job appears immediately
+    if (invalidateStudentMatches) await invalidateStudentMatches();
+
     return res.status(201).json({
       job: {
         _id: job._id,
@@ -114,7 +124,7 @@ router.get('/:id/candidates', employerGuard, async (req, res) => {
     const usingDefaultWeights = (weights.trade === 40 && weights.district === 30 && weights.cert === 30);
 
     if (usingDefaultWeights) {
-      const cached = await getCachedCandidates(jobId);
+      const cached = await getCachedCandidates(jobId, job.trade);
       if (cached) return res.json({ candidates: cached, cached: true });
     }
 
@@ -126,7 +136,7 @@ router.get('/:id/candidates', employerGuard, async (req, res) => {
       await Student.updateMany({ _id: { $in: candidateIds } }, { $inc: { profileViews: 1 } });
     }
 
-    if (usingDefaultWeights) await setCachedCandidates(jobId, candidates);
+    if (usingDefaultWeights) await setCachedCandidates(jobId, job.trade, candidates);
 
     return res.json({ candidates, cached: false });
   } catch (err) {
@@ -193,6 +203,78 @@ router.post('/:id/apply', studentGuard, async (req, res) => {
   } catch (err) {
     console.error('POST /api/jobs/:id/apply error:', err);
     return res.status(500).json({ message: 'Failed to submit application', error: err.message });
+  }
+});
+
+// GET /api/jobs/:id — public single job details
+router.get('/:id', async (req, res) => {
+  try {
+    console.log(`Fetching job details for ID: ${req.params.id}`);
+    const job = await Job.findById(req.params.id).populate('employerId', 'companyName isVerified phone email description');
+    if (!job) {
+      console.log(`Job not found for ID: ${req.params.id}`);
+      return res.status(404).json({ message: 'Job not found' });
+    }
+    return res.json({ job });
+  } catch (err) {
+    console.error(`Error fetching job ${req.params.id}:`, err);
+    return res.status(500).json({ message: 'Error fetching job', error: err.message });
+  }
+});
+
+// PUT /api/jobs/:id — employer updates their own job (protected)
+router.put('/:id', employerGuard, async (req, res) => {
+  try {
+    const { title, trade, country, state, district, certRequired, description } = req.body;
+    const job = await Job.findById(req.params.id);
+    
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    if (job.employerId.toString() !== req.employer.id) {
+      return res.status(403).json({ message: 'Unauthorized: You do not own this job' });
+    }
+
+    job.title = title || job.title;
+    job.trade = trade || job.trade;
+    job.country = country || job.country;
+    job.state = state || job.state;
+    job.district = district || job.district;
+    job.certRequired = certRequired || job.certRequired;
+    job.description = description || job.description;
+
+    await job.save();
+
+    // Invalidate caches
+    if (invalidateStudentMatches) await invalidateStudentMatches();
+
+    return res.json({ job });
+  } catch (err) {
+    console.error('PUT /api/jobs/:id error:', err);
+    return res.status(500).json({ message: 'Failed to update job', error: err.message });
+  }
+});
+
+// DELETE /api/jobs/:id — employer deletes their own job (protected)
+router.delete('/:id', employerGuard, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    if (job.employerId.toString() !== req.employer.id) {
+      return res.status(403).json({ message: 'Unauthorized: You do not own this job' });
+    }
+
+    await Job.findByIdAndDelete(req.params.id);
+
+    // Delete all associated applications
+    await JobApplication.deleteMany({ jobId: req.params.id });
+
+    // Invalidate caches
+    if (invalidateStudentMatches) await invalidateStudentMatches();
+
+    return res.json({ message: 'Job and associated applications deleted successfully' });
+  } catch (err) {
+    console.error('DELETE /api/jobs/:id error:', err);
+    return res.status(500).json({ message: 'Failed to delete job', error: err.message });
   }
 });
 
