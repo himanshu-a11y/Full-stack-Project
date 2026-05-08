@@ -66,7 +66,7 @@ router.get('/stats', async (req, res) => {
   try {
     const [totalStudents, unverifiedCount, totalJobs] = await Promise.all([
       Student.countDocuments(),
-      Student.countDocuments({ isVerified: false }),
+      Student.countDocuments({ isVerified: { $ne: true } }),
       Job.countDocuments()
     ]);
     res.json({ totalStudents, unverifiedCount, totalJobs });

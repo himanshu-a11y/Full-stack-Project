@@ -20,7 +20,6 @@ const studentSchema = new mongoose.Schema({
   createdAt:      { type: Date, default: Date.now }
 });
 
-// Covered query index — CRITICAL for Task 1.5
 studentSchema.index({ trade: 1, status: 1 });
 
 // Hash password before saving
