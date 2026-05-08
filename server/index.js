@@ -13,18 +13,26 @@ app.use(express.json());
 // Routes — M1 (Vedika)
 const authRoutes    = require('./routes/auth');
 const studentRoutes = require('./routes/student');
+const employerRoutes = require('./routes/employer');
 const adminRoutes   = require('./routes/admin');
+const locationRoutes = require('./routes/locations');
 
 // Routes — M2 (Bobby)
 const jobRoutes     = require('./routes/jobs');
+const applicationRoutes = require('./routes/applications');
+const messageRoutes = require('./routes/messages');
 
 // Mount — M1
 app.use('/api', authRoutes);            // /api/student/register, /api/employer/register, /api/auth/login
 app.use('/api/student', studentRoutes); // /api/student/profile
+app.use('/api/employer', employerRoutes); // /api/employer/profile
 app.use('/api/admin', adminRoutes);     // /api/admin/import
+app.use('/api/locations', locationRoutes); // /api/locations/countries, /api/locations/states
 
 // Mount — M2
-app.use('/api', jobRoutes);             // /api/jobs
+app.use('/api/jobs', jobRoutes);             // /api/jobs
+app.use('/api/applications', applicationRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Health check
 app.get('/', (req, res) => res.send('SkillBridge API running ✅'));

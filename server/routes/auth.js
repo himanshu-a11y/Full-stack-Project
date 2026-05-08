@@ -4,19 +4,51 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Student = require('../models/Student');
 const Employer = require('../models/Employer');
+const employerGuard = require('../middleware/employerGuard');
+const { invalidateByTrade } = require('../services/cache');
 
 // POST /api/student/register
 router.post('/student/register', async (req, res) => {
   try {
-    const { name, email, password, phone, trade, district, certifications } = req.body;
-    const student = new Student({ name, email, password, phone, trade, district, certifications });
+    const { name, email, password, phone, trade, country, state, district, certifications } = req.body;
+    const student = new Student({
+      name,
+      email,
+      password,
+      phone,
+      trade,
+      country: country || 'India',
+      state: state || '',
+      district: district || '',
+      certifications,
+    });
     await student.save();
     const token = jwt.sign(
-      { id: student._id, role: 'student', trade: student.trade, district: student.district },
+      {
+        id: student._id,
+        role: 'student',
+        trade: student.trade,
+        country: student.country,
+        state: student.state,
+        district: student.district,
+      },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    res.status(201).json({ token, student: { _id: student._id, name, trade, district } });
+    res.status(201).json({
+      token,
+      student: {
+        _id: student._id,
+        name,
+        trade,
+        country: student.country,
+        state: student.state,
+        district: student.district,
+      },
+    });
+
+    // Invalidate employer match cache for this trade so new student appears immediately
+    if (invalidateByTrade) await invalidateByTrade(student.trade);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -43,6 +75,21 @@ router.post('/employer/register', async (req, res) => {
 router.post('/auth/login', async (req, res) => {
   try {
     const { email, password, role } = req.body;
+    const trimmedEmail = email?.trim();
+    const trimmedPass = password?.trim();
+
+    // Handle Admin Login separately (Hardcoded for single-tenant institution owner)
+    if (role === 'admin') {
+      const ADMIN_EMAIL = 'admin@skillbridge.gov';
+      const ADMIN_PASS = 'admin123'; // In a real app, this would be in DB or ENV
+
+      if (trimmedEmail === ADMIN_EMAIL && trimmedPass === ADMIN_PASS) {
+        const token = jwt.sign({ role: 'admin', email: ADMIN_EMAIL }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        return res.json({ token, role: 'admin', profile: { name: 'Institutional Admin' } });
+      }
+      return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+
     const Model = role === 'student' ? Student : Employer;
     const user = await Model.findOne({ email });
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
@@ -52,8 +99,22 @@ router.post('/auth/login', async (req, res) => {
 
     let payload, profile;
     if (role === 'student') {
-      payload = { id: user._id, role: 'student', trade: user.trade, district: user.district };
-      profile = { _id: user._id, name: user.name, trade: user.trade, district: user.district };
+      payload = {
+        id: user._id,
+        role: 'student',
+        trade: user.trade,
+        country: user.country || 'India',
+        state: user.state || '',
+        district: user.district || '',
+      };
+      profile = {
+        _id: user._id,
+        name: user.name,
+        trade: user.trade,
+        country: user.country || 'India',
+        state: user.state || '',
+        district: user.district || '',
+      };
     } else {
       payload = { id: user._id, role: 'employer', companyName: user.companyName };
       profile = { _id: user._id, companyName: user.companyName };
@@ -63,6 +124,32 @@ router.post('/auth/login', async (req, res) => {
     res.json({ token, role, profile });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/employer/profile (protected by employerGuard)
+router.get('/employer/profile', employerGuard, async (req, res) => {
+  try {
+    const employer = await Employer.findById(req.employer.id).select('-password');
+    if (!employer) return res.status(404).json({ message: 'Employer not found' });
+    res.json({ employer });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch profile', error: err.message });
+  }
+});
+
+// PUT /api/employer/profile (protected by employerGuard)
+router.put('/employer/profile', employerGuard, async (req, res) => {
+  try {
+    const { companyName, email, city } = req.body;
+    const employer = await Employer.findByIdAndUpdate(
+      req.employer.id,
+      { companyName, email, city },
+      { new: true }
+    ).select('-password');
+    res.json({ employer });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update profile', error: err.message });
   }
 });
 

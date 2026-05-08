@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { TRADES } = require('../shared/constants');
+const { TRADES } = require('../../shared/constants');
 
 const studentSchema = new mongoose.Schema({
   name:           { type: String, required: true },
@@ -8,15 +8,18 @@ const studentSchema = new mongoose.Schema({
   email:          { type: String, required: true, unique: true },
   password:       { type: String, required: true },
   trade:          { type: String, enum: TRADES },
+  country:        { type: String, default: 'India' },
+  state:          { type: String },
   district:       { type: String },
   certifications: [{ type: String }],
   availability:   { type: Boolean, default: true },
   status:         { type: String, default: 'active' },
   tradeHistory:   [{ type: String }],
+  profileViews:   { type: Number, default: 0 },
+  isVerified:     { type: Boolean, default: false },
   createdAt:      { type: Date, default: Date.now }
 });
 
-// Covered query index — CRITICAL for Task 1.5
 studentSchema.index({ trade: 1, status: 1 });
 
 // Hash password before saving

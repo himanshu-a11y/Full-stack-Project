@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from '../api/axios';
+import { TRADES } from '../../../shared/constants.js';
 import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Input from '../components/ui/Input';
+import { getCountries, getStates, getDistricts } from '../api/locations';
 
 const StudentProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -12,27 +14,61 @@ const StudentProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [updating, setUpdating] = useState(false);
-  
-  const TRADES = ['Electrician', 'Fitter', 'Welder', 'Turner', 'Mechanic', 'Plumber', 'Carpenter', 'Painter', 'Draughtsman', 'COPA'];
-  const DISTRICTS = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Mehsana', 'Anand', 'Bhavnagar', 'Jamnagar', 'Junagadh'];
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
 
   useEffect(() => {
-    // Simulated fetch - Backend student route is commented out inside server/index.js
-    setTimeout(() => {
-      setProfile({
-        name: 'Jane Doe',
-        email: 'jane@example.com',
-        phone: '9876543210',
-        trade: 'Electrician',
-        district: 'Ahmedabad',
-        certifications: ['NCVT', 'SCVT'],
-        score: 85
-      });
-      setLoading(false);
-    }, 800);
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get('/api/student/profile');
+        setProfile(res.data.student);
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
   }, []);
 
+  useEffect(() => {
+    const loadCountries = async () => {
+      const data = await getCountries();
+      setCountries(data);
+    };
+    loadCountries();
+  }, []);
+
+  useEffect(() => {
+    const country = formData.country || profile?.country || 'India';
+    const loadStates = async () => {
+      const data = await getStates(country);
+      setStates(data);
+    };
+    loadStates();
+  }, [formData.country, profile?.country]);
+
+  useEffect(() => {
+    const country = formData.country || profile?.country || 'India';
+    const state = formData.state || profile?.state || '';
+    const loadDistricts = async () => {
+      const data = await getDistricts(country, state);
+      setDistricts(data);
+    };
+    loadDistricts();
+  }, [formData.country, formData.state, profile?.country, profile?.state]);
+
   const sidebarLinks = [
+    {
+      label: 'Dashboard',
+      to: '/student/dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
     {
       label: 'My Profile',
       to: '/student/profile',
@@ -50,7 +86,25 @@ const StudentProfile = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       ),
-    }
+    },
+    {
+      label: 'Applications',
+      to: '/student/applications',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Messages',
+      to: '/messages',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+      ),
+    },
   ];
 
   const handleEditClick = () => {
@@ -63,19 +117,26 @@ const StudentProfile = () => {
   };
 
   const handleChange = (e) => {
+    if (e.target.name === 'country') {
+      setFormData({ ...formData, country: e.target.value, state: '', district: '' });
+      return;
+    }
+    if (e.target.name === 'state') {
+      setFormData({ ...formData, state: e.target.value, district: '' });
+      return;
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
     setUpdating(true);
     try {
-      // Mock API call to update profile
-      // await axios.put('/api/student/profile', formData);
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
-      setProfile(formData);
+      const res = await axios.put('/api/student/profile', formData);
+      setProfile(res.data.student);
       setIsEditing(false);
     } catch (err) {
       console.error("Failed to update profile", err);
+      alert(err.response?.data?.message || "Failed to update profile");
     } finally {
       setUpdating(false);
     }
@@ -90,12 +151,10 @@ const StudentProfile = () => {
   }
 
   return (
-    <div className="flex bg-slate-50 min-h-[calc(100vh-64px)]">
-      <div className="hidden md:block">
-        <Sidebar links={sidebarLinks} title="Student Panel" />
-      </div>
+    <div className="flex bg-[#F0FDF4] h-screen overflow-hidden font-sans">
+      <Sidebar links={sidebarLinks} title="STUDENT NAVIGATION" roleBadge={{ type: 'student', label: 'Student Portal' }} user={profile} />
 
-      <div className="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto h-screen p-6 pt-24 lg:p-12 max-w-4xl mx-auto w-full scrollbar-hide">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
           {isEditing ? (
@@ -133,13 +192,17 @@ const StudentProfile = () => {
                   value={formData.phone || ''}
                   onChange={handleChange}
                 />
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700">ITI Trade</label>
+                 <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">ITI Trade</label>
+                    {profile?.isVerified && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Locked after Verification</span>}
+                  </div>
                   <select
                     name="trade"
                     value={formData.trade || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                    disabled={profile?.isVerified}
+                    className={`w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-navy outline-none ${profile?.isVerified ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
                   >
                     {TRADES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
@@ -147,51 +210,93 @@ const StudentProfile = () => {
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700">District</label>
+                  <label className="text-sm font-medium text-gray-700">Country</label>
+                  <select
+                    name="country"
+                    value={formData.country || 'India'}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                  >
+                    {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">State</label>
+                  <select
+                    name="state"
+                    value={formData.state || ''}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                  >
+                    <option value="">Select state...</option>
+                    {states.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">District / City</label>
                   <select
                     name="district"
                     value={formData.district || ''}
                     onChange={handleChange}
                     className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brand-navy outline-none"
+                    disabled={!formData.state}
                   >
-                    {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                    <option value="">Select district...</option>
+                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">Certifications (Comma separated)</label>
+                    {profile?.isVerified && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Locked after Verification</span>}
+                  </div>
+                  <input
+                    type="text"
+                    name="certifications"
+                    value={Array.isArray(formData.certifications) ? formData.certifications.join(', ') : formData.certifications || ''}
+                    onChange={(e) => setFormData({ ...formData, certifications: e.target.value.split(',').map(s => s.trim()) })}
+                    disabled={profile?.isVerified}
+                    placeholder="e.g. AWS D1.1, Safety Level 1"
+                    className={`w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-navy outline-none ${profile?.isVerified ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
+                  />
                 </div>
               </div>
             </div>
           ) : (
             <>
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6 border-b border-gray-100 pb-8 mb-8">
-            <div className="w-24 h-24 rounded-full bg-brand-light text-brand-blue flex items-center justify-center text-3xl font-bold flex-shrink-0">
-              {profile?.name.charAt(0)}
-            </div>
-            <div className="text-center md:text-left">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{profile?.name}</h2>
-              <div className="text-gray-600 space-y-1">
-                <p className="flex items-center justify-center md:justify-start gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                  {profile?.email}
-                </p>
-                <p className="flex items-center justify-center md:justify-start gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                  +91 {profile?.phone}
-                </p>
+                <div className="w-24 h-24 rounded-full bg-brand-light text-brand-blue flex items-center justify-center text-3xl font-bold flex-shrink-0">
+                  {profile?.name.charAt(0)}
+                </div>
+                <div className="text-center md:text-left">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{profile?.name}</h2>
+                  <div className="text-gray-600 space-y-1">
+                    <p className="flex items-center justify-center md:justify-start gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      {profile?.email}
+                    </p>
+                    <p className="flex items-center justify-center md:justify-start gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                      +91 {profile?.phone}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Professional Details</h3>
-              <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">ITI Trade</p>
-                  <Badge variant="blue" className="text-sm px-3 py-1">{profile?.trade}</Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">District</p>
-                  <Badge variant="green" className="text-sm px-3 py-1">{profile?.district}</Badge>
-                </div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Professional Details</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">ITI Trade</p>
+                      <Badge variant="blue" className="text-sm px-3 py-1">{profile?.trade}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Location</p>
+                      <Badge variant="green" className="text-sm px-3 py-1">{profile?.state || profile?.district}, {profile?.country || 'India'}</Badge>
+                    </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-1">Certifications</p>
                       <div className="flex gap-2 flex-wrap">

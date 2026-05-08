@@ -5,6 +5,7 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
+import Footer from '../components/Footer';
 
 const StudentLogin = () => {
   const navigate = useNavigate();
@@ -33,7 +34,9 @@ const StudentLogin = () => {
       });
       localStorage.setItem('skillbridge_token', res.data.token);
       localStorage.setItem('skillbridge_role', 'student');
-      navigate('/jobs');
+      localStorage.setItem('skillbridge_user_id', res.data.profile._id);
+      window.dispatchEvent(new Event('auth-change'));
+      navigate('/student/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials. Please try again. Note: Backend auth routes might be disabled.');
     } finally {
@@ -42,7 +45,8 @@ const StudentLogin = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4">
+    <>
+      <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 shadow-card-hover md:my-10 border-t-4 border-t-brand-blue">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-brand-navy tracking-tight mb-2">Student Login</h2>
@@ -87,6 +91,8 @@ const StudentLogin = () => {
         </div>
       </Card>
     </div>
+    <Footer />
+  </>
   );
 };
 

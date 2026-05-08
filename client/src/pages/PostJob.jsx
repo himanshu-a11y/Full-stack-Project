@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
-import { TRADES, DISTRICTS, CERTIFICATIONS } from '../../../shared/constants';
+import { TRADES, CERTIFICATIONS } from '../../../shared/constants.js';
 import Sidebar from '../components/ui/Sidebar';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
+import { getCountries, getStates, getDistricts } from '../api/locations';
 
 const PostJob = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-
+  const [isEdit, setIsEdit] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     trade: '',
+    country: 'India',
+    state: '',
     district: '',
     certRequired: [],
     description: '',
@@ -24,11 +28,42 @@ const PostJob = () => {
   const [jobsLoading, setJobsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+
+  useEffect(() => {
+    const fetchJobToEdit = async () => {
+      if (id) {
+        try {
+          setIsEdit(true);
+          const res = await axios.get(`/api/jobs/${id}`);
+          const job = res.data.job;
+          setFormData({
+            title: job.title,
+            trade: job.trade,
+            country: job.country,
+            state: job.state,
+            district: job.district,
+            certRequired: job.certRequired || [],
+            description: job.description
+          });
+        } catch (err) {
+          console.error("Failed to fetch job for edit", err);
+          setError("Failed to load job details.");
+        }
+      } else {
+        setIsEdit(false);
+        setFormData({ title: '', trade: '', country: 'India', state: '', district: '', certRequired: [], description: '' });
+      }
+    };
+    fetchJobToEdit();
+  }, [id]);
 
   useEffect(() => {
     const fetchMyJobs = async () => {
       try {
-        const res = await axios.get('/api/jobs?page=1&limit=50');
+        const res = await axios.get('/api/jobs/my-jobs');
         setMyJobs(res.data.jobs || []);
       } catch (err) {
         console.error('Could not load jobs:', err);
@@ -37,9 +72,41 @@ const PostJob = () => {
       }
     };
     fetchMyJobs();
-  }, [success]);
+  }, [success, id]);
+
+  useEffect(() => {
+    const loadCountries = async () => {
+      const data = await getCountries();
+      setCountries(data);
+    };
+    loadCountries();
+  }, []);
+
+  useEffect(() => {
+    const loadStates = async () => {
+      const data = await getStates(formData.country);
+      setStates(data);
+    };
+    loadStates();
+  }, [formData.country]);
+
+  useEffect(() => {
+    const loadDistricts = async () => {
+      const data = await getDistricts(formData.country, formData.state);
+      setDistricts(data);
+    };
+    loadDistricts();
+  }, [formData.country, formData.state]);
 
   const handleChange = (e) => {
+    if (e.target.name === 'country') {
+      setFormData({ ...formData, country: e.target.value, state: '', district: '' });
+      return;
+    }
+    if (e.target.name === 'state') {
+      setFormData({ ...formData, state: e.target.value, district: '' });
+      return;
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -59,35 +126,87 @@ const PostJob = () => {
     setSuccess('');
 
     try {
-      const res = await axios.post('/api/jobs', formData);
-      setSuccess('Job posted successfully! Job ID: ' + res.data.job._id);
-      setFormData({ title: '', trade: '', district: '', certRequired: [], description: '' });
+      if (isEdit) {
+        await axios.put(`/api/jobs/${id}`, formData);
+        setSuccess('Job updated successfully!');
+        setTimeout(() => navigate('/employer/post-job'), 2000);
+      } else {
+        const res = await axios.post('/api/jobs', formData);
+        setSuccess('Job posted successfully! Job ID: ' + res.data.job._id);
+        setFormData({ title: '', trade: '', country: formData.country || 'India', state: '', district: '', certRequired: [], description: '' });
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to post job. Please try again.');
+      setError(err.response?.data?.message || 'Operation failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDelete = async (jobId) => {
+    if (!window.confirm("Are you sure you want to delete this job? This will also delete all applications for it.")) return;
+    try {
+      await axios.delete(`/api/jobs/${jobId}`);
+      setMyJobs(myJobs.filter(j => j._id !== jobId));
+      setSuccess("Job deleted successfully.");
+      if (id === jobId) navigate('/employer/post-job');
+    } catch (err) {
+      setError("Failed to delete job.");
+    }
+  };
+
   const sidebarLinks = [
     {
-      label: 'Post New Job',
+      label: 'Dashboard',
       to: '/employer/dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Manage Applications',
+      to: '/employer/applications',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Messages',
+      to: '/messages',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Post New Job',
+      to: '/employer/post-job',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
         </svg>
       ),
     },
+    {
+      label: 'Company Profile',
+      to: '/employer/profile',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+    },
   ];
 
   return (
-    <div className="flex bg-slate-50 min-h-[calc(100vh-64px)]">
-      <div className="hidden md:block">
-        <Sidebar links={sidebarLinks} title="Employer Panel" />
-      </div>
+    <div className="flex bg-[#F0FDF4] h-screen overflow-hidden font-sans">
+      <Sidebar links={sidebarLinks} title="EMPLOYER NAVIGATION" roleBadge={{ type: 'employer', label: 'Employer Hub' }} />
 
-      <div className="flex-1 p-6 md:p-10 max-w-5xl mx-auto overflow-y-auto">
+      <div className="flex-1 overflow-y-auto h-screen p-6 pt-24 lg:p-12 max-w-5xl mx-auto w-full scrollbar-hide">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Employer Dashboard</h1>
           <p className="text-gray-600">Manage your job listings and find the best candidates.</p>
@@ -95,9 +214,14 @@ const PostJob = () => {
 
         {/* Post Job Form */}
         <Card className="p-6 md:p-8 mb-10">
-          <div className="border-b border-gray-100 pb-4 mb-6">
-            <h2 className="text-xl font-semibold text-brand-navy">Post a New Job</h2>
-            <p className="text-sm text-gray-500 mt-1">Fill out the requirements to find the right ITI candidate.</p>
+          <div className="border-b border-gray-100 pb-4 mb-6 flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-brand-navy">{isEdit ? 'Edit Job Posting' : 'Post a New Job'}</h2>
+              <p className="text-sm text-gray-500 mt-1">{isEdit ? 'Update your job requirements.' : 'Fill out the requirements to find the right ITI candidate.'}</p>
+            </div>
+            {isEdit && (
+              <Button variant="outline" size="sm" onClick={() => navigate('/employer/post-job')}>Cancel Edit</Button>
+            )}
           </div>
 
           {error && <Alert variant="error" className="mb-6">{error}</Alert>}
@@ -132,16 +256,48 @@ const PostJob = () => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700">District</label>
+                <label className="text-sm font-medium text-gray-700">Country</label>
+                <select
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                >
+                  <option value="">Select country...</option>
+                  {countries.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">State</label>
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                >
+                  <option value="">Select state...</option>
+                  {states.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">District / City</label>
                 <select
                   name="district"
                   value={formData.district}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                  disabled={!formData.state}
                 >
                   <option value="">Select district...</option>
-                  {DISTRICTS.map((d) => (
+                  {districts.map((d) => (
                     <option key={d} value={d}>{d}</option>
                   ))}
                 </select>
@@ -178,10 +334,15 @@ const PostJob = () => {
               />
             </div>
 
-            <div className="pt-2">
-              <Button type="submit" loading={loading}>
-                {loading ? 'Posting...' : 'Post Job'}
+            <div className="pt-2 flex gap-4">
+              <Button type="submit" loading={loading} className="flex-1">
+                {loading ? (isEdit ? 'Updating...' : 'Posting...') : (isEdit ? 'Update Job' : 'Post Job')}
               </Button>
+              {isEdit && (
+                <Button type="button" variant="outline" onClick={() => navigate('/employer/post-job')} className="px-8">
+                  Cancel
+                </Button>
+              )}
             </div>
           </form>
         </Card>
@@ -205,7 +366,7 @@ const PostJob = () => {
                   <tr className="bg-gray-50 text-gray-600 text-sm">
                     <th className="px-4 py-3 font-medium border-b border-gray-200 rounded-tl-lg">Title</th>
                     <th className="px-4 py-3 font-medium border-b border-gray-200">Trade</th>
-                    <th className="px-4 py-3 font-medium border-b border-gray-200">District</th>
+                    <th className="px-4 py-3 font-medium border-b border-gray-200">Location</th>
                     <th className="px-4 py-3 font-medium border-b border-gray-200 rounded-tr-lg">Action</th>
                   </tr>
                 </thead>
@@ -214,15 +375,26 @@ const PostJob = () => {
                     <tr key={job._id} className="border-b border-gray-100 hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-4 font-medium text-gray-900">{job.title}</td>
                       <td className="px-4 py-4">{job.trade}</td>
-                      <td className="px-4 py-4">{job.district}</td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4">{job.state || job.district}, {job.country || 'India'}</td>
+                      <td className="px-4 py-4 flex flex-wrap gap-2">
                         <Link
                           to={`/employer/jobs/${job._id}/candidates`}
-                          className="text-brand-blue font-medium hover:underline inline-flex items-center gap-1"
+                          className="bg-blue-50 text-brand-blue px-3 py-1 rounded-md font-bold text-[10px] uppercase tracking-wider hover:bg-brand-blue hover:text-white transition-all"
                         >
-                          View Candidates
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                          Candidates
                         </Link>
+                        <button
+                          onClick={() => navigate(`/employer/edit-job/${job._id}`)}
+                          className="bg-slate-50 text-slate-600 px-3 py-1 rounded-md font-bold text-[10px] uppercase tracking-wider hover:bg-slate-200 transition-all"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(job._id)}
+                          className="bg-rose-50 text-rose-600 px-3 py-1 rounded-md font-bold text-[10px] uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}

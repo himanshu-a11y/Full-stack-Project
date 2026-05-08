@@ -5,7 +5,13 @@ const employerSchema = new mongoose.Schema({
   companyName: { type: String, required: true },
   email:       { type: String, required: true, unique: true },
   password:    { type: String, required: true },
-  city:        { type: String },
+  country:     { type: String, default: 'India' },
+  state:       { type: String },
+  district:    { type: String },
+  phone:       { type: String },
+  description: { type: String },
+  website:     { type: String },
+  isVerified:  { type: Boolean, default: false },
   createdAt:   { type: Date, default: Date.now }
 });
 
